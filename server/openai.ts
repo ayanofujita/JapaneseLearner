@@ -26,20 +26,22 @@ Respond with only the translated text, no explanations.`;
 
 export async function addFurigana(text: string): Promise<string> {
   try {
-    const systemPrompt = `You are a Japanese language processor that adds furigana to kanji. 
-Your only task is to add HTML ruby tags with furigana readings to all kanji in the provided Japanese text.
-You must ONLY return the processed text with ruby tags, with no explanations, comments, or additional text.
-Do not include markdown formatting like \`\`\`html or \`\`\` in your response.`;
+    const systemPrompt = `You are a Japanese language processor. Your task is to:
+1. Add HTML ruby tags with furigana readings to all kanji in the provided Japanese text
+2. Wrap each meaningful Japanese word (including compounds of kanji, hiragana, and katakana) in <span class="jp-word"> tags
+3. Keep particles (は、が、の、etc.) and punctuation outside of spans unless they're part of a word
+4. Preserve spaces and line breaks
 
-    const prompt = `Add HTML ruby tags with furigana readings to all kanji in this Japanese text.
-Example format: <ruby>漢字<rt>かんじ</rt></ruby>
-Process this text: ${text}`;
+Example input: 勉強するのが好きです。
+Example output: <span class="jp-word"><ruby>勉強<rt>べんきょう</rt></ruby>する</span>のが<span class="jp-word"><ruby>好<rt>す</rt></ruby>き</span>です。
+
+Do not include markdown formatting or any explanations in your response.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
+        { role: "user", content: text }
       ],
       temperature: 0.1,
     });
@@ -47,7 +49,7 @@ Process this text: ${text}`;
     // Strip any markdown code block syntax if present
     let content = response.choices[0].message.content || text;
     content = content.replace(/^```html\s*/g, '').replace(/\s*```$/g, '');
-    
+
     return content;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error occurred';

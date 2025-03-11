@@ -19,11 +19,11 @@ export default function JapaneseText({ text }: { text: string }) {
       selectedElement.classList.remove("bg-primary/10");
     }
 
-    // Find the word container (ruby element) and its associated rt element
-    const rubyElement = target.closest('ruby');
-    if (rubyElement) {
+    // Find the word container (jp-word span)
+    const wordElement = target.closest('.jp-word');
+    if (wordElement) {
       // Get the bounding rectangle of the clicked element
-      const rect = rubyElement.getBoundingClientRect();
+      const rect = wordElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
 
       // Calculate popup position - now closer to the word
@@ -34,17 +34,17 @@ export default function JapaneseText({ text }: { text: string }) {
       const popupY = rect.top + rect.height + 5; // Position just below the word
 
       // Add highlight to the word
-      rubyElement.classList.add("bg-primary/10");
-      setSelectedElement(rubyElement);
+      wordElement.classList.add("bg-primary/10");
+      setSelectedElement(wordElement);
 
-      // Get the base text (remove rt content)
-      const rtElement = rubyElement.querySelector('rt');
-      const fullWord = rubyElement.textContent || '';
-      const reading = rtElement?.textContent || '';
-      // Remove the reading from the full text to get just the word
-      const word = fullWord.replace(reading, '').trim();
+      // Get the full word text by removing all rt content
+      const rtElements = wordElement.querySelectorAll('rt');
+      let fullWord = wordElement.textContent || '';
+      rtElements.forEach(rt => {
+        fullWord = fullWord.replace(rt.textContent || '', '');
+      });
 
-      setSelectedWord(word);
+      setSelectedWord(fullWord.trim());
       setPopupPosition({ x: popupX, y: popupY });
     }
   };
@@ -66,7 +66,8 @@ export default function JapaneseText({ text }: { text: string }) {
           ${!showFurigana ? '[&_rt]:hidden [&_rt]:absolute [&_rt]:top-0' : '[&_rt]:block'}
           [&_ruby]:inline-flex [&_ruby]:flex-col [&_ruby]:items-center [&_ruby]:justify-center
           [&_ruby]:relative [&_ruby]:leading-normal
-          [&_ruby]:hover:cursor-pointer
+          [&_.jp-word]:hover:cursor-pointer [&_.jp-word]:rounded
+          [&_.jp-word]:transition-colors
         `}
         onClick={handleWordClick}
         dangerouslySetInnerHTML={{ __html: text }}
