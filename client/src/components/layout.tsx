@@ -13,18 +13,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <nav className="flex gap-4 items-center">
+              <span className="text-2xl font-bold text-primary">日本語学習</span>
               <Link href="/">
-                <a className="text-2xl font-bold text-primary">日本語学習</a>
-              </Link>
-              <Link href="/">
-                <a className={location === "/" ? "text-primary" : "text-muted-foreground"}>
+                <span className={location === "/" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
                   Translate
-                </a>
+                </span>
               </Link>
               <Link href="/study">
-                <a className={location === "/study" ? "text-primary" : "text-muted-foreground"}>
+                <span className={location === "/study" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
                   Study
-                </a>
+                </span>
               </Link>
             </nav>
             <Button
