@@ -68,7 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/words", async (req, res) => {
     try {
-      const words = await storage.getSavedWords(req.user?.id);
+      // Get all words when not authenticated, otherwise get user's words
+      const words = await storage.getSavedWords(req.user?.id || null);
       res.json(words);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
