@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookmarkIcon, XIcon } from "lucide-react";
+import { BookmarkIcon, XIcon, LoaderIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -12,19 +13,62 @@ interface DictionaryPopupProps {
   onClose: () => void;
 }
 
+interface DictionaryEntry {
+  reading: string;
+  meaning: string;
+}
+
 export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [dictionaryData, setDictionaryData] = useState<DictionaryEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { mutate: saveWord } = useMutation({
+  // Fetch dictionary data when component mounts
+  useEffect(() => {
+    async function fetchDictionaryData() {
+      try {
+        setIsLoading(true);
+        // In a real implementation, you would have an API endpoint to fetch dictionary data
+        // For now, simulate a dictionary lookup with a timeout
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Example dictionary entry - in a real app, this would come from an API
+        setDictionaryData({
+          reading: word.length > 2 ? word.substring(0, 2) + "～" : word,
+          meaning: "Loading dictionary data..."
+        });
+      } catch (err) {
+        setError("Failed to fetch dictionary data");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchDictionaryData();
+  }, [word]);
+
+  const { mutate: saveWord, isError } = useMutation({
     mutationFn: async (data: { word: string; reading: string; meaning: string }) => {
       const res = await apiRequest("POST", "/api/words", data);
+      if (!res.ok) {
+        throw new Error('Failed to save word');
+      }
       return res.json();
     },
     onSuccess: () => {
       toast({
         title: "Word saved",
         description: "Word has been added to your study list"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error saving word",
+        description: error.message,
+        variant: "destructive"
       });
     }
   });
@@ -61,17 +105,38 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">Loading dictionary data...</p>
+        {isLoading ? (
+          <div className="flex items-center space-x-2 py-2">
+            <LoaderIcon className="h-4 w-4 animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading dictionary data...</p>
+          </div>
+        ) : error ? (
+          <p className="text-sm text-red-500">{error}</p>
+        ) : (
+          <>
+            <div className="mb-2">
+              <div className="text-sm font-medium">Reading</div>
+              <p className="text-sm">{dictionaryData?.reading || "Unknown"}</p>
+            </div>
+            <div className="mb-4">
+              <div className="text-sm font-medium">Meaning</div>
+              <p className="text-sm">{dictionaryData?.meaning || "Unknown"}</p>
+            </div>
+          </>
+        )}
         <Button
           size="sm"
           variant="outline"
           className="w-full"
+          disabled={isLoading || !dictionaryData}
           onClick={() => {
-            saveWord({
-              word,
-              reading: "Example reading",
-              meaning: "Example meaning"
-            });
+            if (dictionaryData) {
+              saveWord({
+                word,
+                reading: dictionaryData.reading,
+                meaning: dictionaryData.meaning
+              });
+            }
           }}
         >
           <BookmarkIcon className="h-4 w-4 mr-2" />

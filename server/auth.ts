@@ -31,7 +31,25 @@ declare global {
   }
 }
 
+// Debug function to log session data
+function logSession(req: Request, message: string) {
+  console.log(`[Session] ${message}`, {
+    user: req.user,
+    sessionID: req.sessionID,
+    isAuthenticated: req.isAuthenticated(),
+  });
+}
+
 export function setupAuth(app: Express) {
+  // Configure session middleware
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'keyboard cat',
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
+    })
+  );
   const sessionSettings = {
     secret: process.env.SESSION_SECRET || 'dev-secret-key',
     resave: false,

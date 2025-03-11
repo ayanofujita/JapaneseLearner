@@ -44,7 +44,9 @@ export default function JapaneseText({ text }: { text: string }) {
         fullWord = fullWord.replace(rt.textContent || '', '');
       });
 
-      setSelectedWord(fullWord.trim());
+      // Trim and clean up the word
+      const cleanWord = fullWord.trim().replace(/\s+/g, '');
+      setSelectedWord(cleanWord);
       setPopupPosition({ x: popupX, y: popupY });
     }
   };

@@ -17,9 +17,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const japaneseText = await translateText(text, tone);
       const withFurigana = await addFurigana(japaneseText);
 
+      // Process the text to wrap each word in a span for clicking
+      const processedText = withFurigana.replace(/<ruby>(.*?)<\/ruby>/g, '<span class="jp-word"><ruby>$1</ruby></span>');
+
       const translation = await storage.createTranslation({
         englishText: text,
-        japaneseText: withFurigana,
+        japaneseText: processedText,
         tone,
         userId: req.user?.id
       });
