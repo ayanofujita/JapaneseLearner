@@ -40,6 +40,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/translations", async (req, res) => {
     try {
+      // When authenticated, get user's translations
+      // When not authenticated, get translations without a userId
       const translations = await storage.getTranslations(req.user?.id);
       res.json(translations);
     } catch (error: unknown) {
