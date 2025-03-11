@@ -65,5 +65,12 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      log(`Port ${port} is already in use. The app may already be running in another process.`);
+      process.exit(1);
+    } else {
+      throw err;
+    }
   });
 })();
