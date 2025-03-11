@@ -17,12 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const japaneseText = await translateText(text, tone);
       const withFurigana = await addFurigana(japaneseText);
 
-      // Process the text to wrap each word in a span for clicking
-      const processedText = withFurigana.replace(/<ruby>(.*?)<\/ruby>/g, '<span class="jp-word"><ruby>$1</ruby></span>');
-
       const translation = await storage.createTranslation({
         englishText: text,
-        japaneseText: processedText,
+        japaneseText: withFurigana,
         tone,
         userId: req.user?.id
       });
@@ -40,8 +37,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/translations", async (req, res) => {
     try {
-      // When authenticated, get user's translations
-      // When not authenticated, get translations without a userId
       const translations = await storage.getTranslations(req.user?.id);
       res.json(translations);
     } catch (error: unknown) {
