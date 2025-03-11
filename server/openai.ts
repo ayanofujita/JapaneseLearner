@@ -26,15 +26,21 @@ Respond with only the translated text, no explanations.`;
 
 export async function addFurigana(text: string): Promise<string> {
   try {
-    const prompt = `Add HTML ruby tags with furigana readings to all kanji in this Japanese text. 
+    const systemPrompt = `You are a Japanese language processor that adds furigana to kanji. 
+Your only task is to add HTML ruby tags with furigana readings to all kanji in the provided Japanese text.
+You must ONLY return the processed text with ruby tags, with no explanations, comments, or additional text.`;
+
+    const prompt = `Add HTML ruby tags with furigana readings to all kanji in this Japanese text.
 Example format: <ruby>漢字<rt>かんじ</rt></ruby>
-Text: ${text}`;
+Process this text: ${text}`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
+        { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
+      temperature: 0.1,
     });
 
     return response.choices[0].message.content || text;
