@@ -69,9 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
+      queryClient.setQueryData(["/api/user"], null);
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
       toast({
         title: "Goodbye!",
         description: "You have been logged out.",
@@ -86,14 +86,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  const login = async (email: string, password: string) => {
+    await loginMutation.mutateAsync({ email, password });
+  };
+
+  const register = async (email: string, password: string) => {
+    await registerMutation.mutateAsync({ email, password });
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user: user ?? null,
         isLoading,
         error: error as Error | null,
-        login: (email, password) => loginMutation.mutateAsync({ email, password }),
-        register: (email, password) => registerMutation.mutateAsync({ email, password }),
+        login,
+        register,
         logout: () => logoutMutation.mutateAsync(),
       }}
     >

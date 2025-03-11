@@ -4,11 +4,11 @@ import { storage } from "./storage";
 import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema } from "@shared/schema";
 import { translateText, addFurigana } from "./openai";
 import { ZodError } from "zod";
-// import { setupAuth } from "./auth";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Temporarily comment out auth setup while we debug
-  // setupAuth(app);
+  // Set up authentication routes and middleware
+  setupAuth(app);
 
   app.post("/api/translate", async (req, res) => {
     try {
@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         englishText: text,
         japaneseText: withFurigana,
         tone,
-        userId: null // Temporarily set to null while auth is disabled
+        userId: req.user?.id
       });
 
       res.json(translation);
@@ -37,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/translations", async (req, res) => {
     try {
-      const translations = await storage.getTranslations();
+      const translations = await storage.getTranslations(req.user?.id);
       res.json(translations);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const word = insertSavedWordSchema.parse(req.body);
       const savedWord = await storage.saveWord({
         ...word,
-        userId: null // Temporarily set to null while auth is disabled
+        userId: req.user?.id
       });
       res.json(savedWord);
     } catch (error: unknown) {
@@ -65,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/words", async (req, res) => {
     try {
-      const words = await storage.getSavedWords();
+      const words = await storage.getSavedWords(req.user?.id);
       res.json(words);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
