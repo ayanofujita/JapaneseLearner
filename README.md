@@ -6,10 +6,10 @@ A web application that translates English text to Japanese with customizable ton
 ## Features
 
 - 🌐 English to Japanese translation with OpenAI
-- 🎭 Multiple tone options for translations
-- 📚 Save and review translation history
+- 🎭 Formal or Casual tone options for translations
+- 📚 Save translation history
 - 📖 Interactive Japanese text with furigana support
-- 📝 Vocabulary management system with spaced repetition
+- 📝 Vocabulary study with spaced repetition
 - 🔐 User authentication for personalized experience
 
 ## Tech Stack
