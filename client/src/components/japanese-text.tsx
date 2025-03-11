@@ -19,29 +19,31 @@ export default function JapaneseText({ text }: { text: string }) {
       selectedElement.classList.remove("bg-primary/10");
     }
 
-    // Find the closest ruby element (word container)
+    // Find the word container (ruby element) and its associated rt element
     const rubyElement = target.closest('ruby');
     if (rubyElement) {
       // Get the bounding rectangle of the clicked element
       const rect = rubyElement.getBoundingClientRect();
       const containerRect = containerRef.current?.getBoundingClientRect();
 
-      // Calculate popup position
+      // Calculate popup position - now closer to the word
       const popupX = Math.min(
         rect.left,
         (containerRect?.right || window.innerWidth) - 300 // Ensure popup doesn't overflow container
       );
-      const popupY = Math.max(
-        rect.top - 200, // Position above the word if possible
-        10 // Minimum distance from top of viewport
-      );
+      const popupY = rect.top + rect.height + 5; // Position just below the word
 
       // Add highlight to the word
       rubyElement.classList.add("bg-primary/10");
       setSelectedElement(rubyElement);
 
-      // Extract the full word including hiragana/katakana
-      const word = rubyElement.textContent || '';
+      // Get the base text (remove rt content)
+      const rtElement = rubyElement.querySelector('rt');
+      const fullWord = rubyElement.textContent || '';
+      const reading = rtElement?.textContent || '';
+      // Remove the reading from the full text to get just the word
+      const word = fullWord.replace(reading, '').trim();
+
       setSelectedWord(word);
       setPopupPosition({ x: popupX, y: popupY });
     }
@@ -64,6 +66,7 @@ export default function JapaneseText({ text }: { text: string }) {
           ${!showFurigana ? '[&_rt]:hidden [&_rt]:absolute [&_rt]:top-0' : '[&_rt]:block'}
           [&_ruby]:inline-flex [&_ruby]:flex-col [&_ruby]:items-center [&_ruby]:justify-center
           [&_ruby]:relative [&_ruby]:leading-normal
+          [&_ruby]:hover:cursor-pointer
         `}
         onClick={handleWordClick}
         dangerouslySetInnerHTML={{ __html: text }}

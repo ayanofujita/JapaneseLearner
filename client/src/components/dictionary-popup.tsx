@@ -44,9 +44,11 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
   const popupStyle = {
     position: "fixed" as const,
     left: Math.min(position.x, window.innerWidth - 300),
-    top: Math.min(position.y, window.innerHeight - 400),
+    top: Math.min(position.y, window.innerHeight - 200),
     zIndex: 50,
     width: 300,
+    maxHeight: 400,
+    overflowY: 'auto' as const
   };
 
   return (
