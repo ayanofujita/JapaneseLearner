@@ -1,52 +1,87 @@
-import { translations, savedWords, type Translation, type InsertTranslation, type SavedWord, type InsertSavedWord } from "@shared/schema";
+import { translations, savedWords, users, type Translation, type InsertTranslation, type SavedWord, type InsertSavedWord, type User, type InsertUser } from "@shared/schema";
 
 export interface IStorage {
+  // User methods
+  createUser(user: InsertUser): Promise<User>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+
   // Translation methods
-  createTranslation(translation: InsertTranslation): Promise<Translation>;
-  getTranslations(): Promise<Translation[]>;
+  createTranslation(translation: InsertTranslation & { userId?: number }): Promise<Translation>;
+  getTranslations(userId?: number): Promise<Translation[]>;
   getTranslation(id: number): Promise<Translation | undefined>;
 
   // Saved word methods
-  saveWord(word: InsertSavedWord): Promise<SavedWord>;
-  getSavedWords(): Promise<SavedWord[]>;
+  saveWord(word: InsertSavedWord & { userId?: number }): Promise<SavedWord>;
+  getSavedWords(userId?: number): Promise<SavedWord[]>;
   updateWordReview(id: number, nextReview: Date): Promise<SavedWord>;
 }
 
 export class MemStorage implements IStorage {
+  private users: Map<number, User>;
   private translations: Map<number, Translation>;
   private savedWords: Map<number, SavedWord>;
+  private userId: number = 1;
   private translationId: number = 1;
   private wordId: number = 1;
 
   constructor() {
+    this.users = new Map();
     this.translations = new Map();
     this.savedWords = new Map();
   }
 
-  async createTranslation(translation: InsertTranslation): Promise<Translation> {
+  // User methods
+  async createUser(user: InsertUser): Promise<User> {
+    const id = this.userId++;
+    const newUser: User = {
+      id,
+      ...user,
+      createdAt: new Date()
+    };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
+  // Translation methods
+  async createTranslation(translation: InsertTranslation & { userId?: number }): Promise<Translation> {
     const id = this.translationId++;
     const newTranslation: Translation = {
       id,
       ...translation,
+      userId: translation.userId || null,
       createdAt: new Date()
     };
     this.translations.set(id, newTranslation);
     return newTranslation;
   }
 
-  async getTranslations(): Promise<Translation[]> {
-    return Array.from(this.translations.values());
+  async getTranslations(userId?: number): Promise<Translation[]> {
+    const translations = Array.from(this.translations.values());
+    return userId 
+      ? translations.filter(t => t.userId === userId)
+      : translations;
   }
 
   async getTranslation(id: number): Promise<Translation | undefined> {
     return this.translations.get(id);
   }
 
-  async saveWord(word: InsertSavedWord): Promise<SavedWord> {
+  // Saved word methods
+  async saveWord(word: InsertSavedWord & { userId?: number }): Promise<SavedWord> {
     const id = this.wordId++;
     const newWord: SavedWord = {
       id,
       ...word,
+      userId: word.userId || null,
       nextReview: new Date(),
       reviewCount: 0,
       context: word.context || null
@@ -55,8 +90,11 @@ export class MemStorage implements IStorage {
     return newWord;
   }
 
-  async getSavedWords(): Promise<SavedWord[]> {
-    return Array.from(this.savedWords.values());
+  async getSavedWords(userId?: number): Promise<SavedWord[]> {
+    const words = Array.from(this.savedWords.values());
+    return userId 
+      ? words.filter(w => w.userId === userId)
+      : words;
   }
 
   async updateWordReview(id: number, nextReview: Date): Promise<SavedWord> {

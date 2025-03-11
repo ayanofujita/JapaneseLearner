@@ -4,8 +4,12 @@ import { storage } from "./storage";
 import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema } from "@shared/schema";
 import { translateText, addFurigana } from "./openai";
 import { ZodError } from "zod";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication routes and middleware
+  setupAuth(app);
+
   app.post("/api/translate", async (req, res) => {
     try {
       const { text, tone } = translateRequestSchema.parse(req.body);
@@ -16,7 +20,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const translation = await storage.createTranslation({
         englishText: text,
         japaneseText: withFurigana,
-        tone
+        tone,
+        userId: req.user?.id
       });
 
       res.json(translation);
@@ -30,9 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/translations", async (_req, res) => {
+  app.get("/api/translations", async (req, res) => {
     try {
-      const translations = await storage.getTranslations();
+      const translations = await storage.getTranslations(req.user?.id);
       res.json(translations);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -43,7 +48,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/words", async (req, res) => {
     try {
       const word = insertSavedWordSchema.parse(req.body);
-      const savedWord = await storage.saveWord(word);
+      const savedWord = await storage.saveWord({
+        ...word,
+        userId: req.user?.id
+      });
       res.json(savedWord);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
@@ -55,9 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/words", async (_req, res) => {
+  app.get("/api/words", async (req, res) => {
     try {
-      const words = await storage.getSavedWords();
+      const words = await storage.getSavedWords(req.user?.id);
       res.json(words);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';

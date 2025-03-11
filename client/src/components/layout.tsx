@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { MoonIcon, SunIcon, LogInIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,13 +27,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </span>
               </Link>
             </nav>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-            </Button>
+            <div className="flex items-center gap-4">
+              {user ? (
+                <>
+                  <span className="text-sm text-muted-foreground">{user.email}</span>
+                  <Button variant="ghost" size="icon" onClick={() => logout()}>
+                    <LogOutIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Link href="/auth">
+                  <Button variant="ghost" size="icon">
+                    <LogInIcon className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
