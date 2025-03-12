@@ -14,12 +14,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { text, tone } = translateRequestSchema.parse(req.body);
 
-      const japaneseText = await translateText(text, tone);
-      const withFurigana = await addFurigana(japaneseText);
+      // Use the combined function instead of two separate calls
+      const japaneseTextWithFurigana = await translateTextWithFurigana(text, tone);
 
       const translation = await storage.createTranslation({
         englishText: text,
-        japaneseText: withFurigana,
+        japaneseText: japaneseTextWithFurigana,
         tone,
         userId: req.user?.id
       });
