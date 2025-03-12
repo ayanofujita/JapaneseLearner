@@ -1,6 +1,3 @@
-import React, { useState } from "react";
-import DictionaryPopup from "./dictionary-popup";
-
 import { useState } from "react";
 import DictionaryPopup from "./dictionary-popup";
 
@@ -40,15 +37,7 @@ export default function JapaneseText({ text, showFurigana = true }: JapaneseText
     : text.replace(/<ruby>(.*?)\|.*?<\/ruby>/g, '$1')
           .replace(/<ruby>(.*?)<rt>.*?<\/rt><\/ruby>/g, '$1');
 
-  return (
-    <div 
-      className={`leading-loose ${showFurigana ? '' : 'no-furigana'}`}
-      onClick={handleContainerClick}
-      dangerouslySetInnerHTML={{ __html: processedText }}
-    />
-  );
-}sText();
-
+  const renderText = () => {
     return (
       <div 
         className="leading-loose" 
