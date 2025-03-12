@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema } from "@shared/schema";
-import { translateText, addFurigana } from "./openai";
+import { translateText, addFurigana, translateTextWithFurigana } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
 
