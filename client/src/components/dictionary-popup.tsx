@@ -70,7 +70,7 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
             path.style.animation = `strokeAnimation 1.5s ${index * 0.5}s ease forwards`;
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error loading stroke order:', error);
         if (svgRef.current) {
           svgRef.current.innerHTML = `<div class="text-sm text-red-500">Failed to load stroke order</div>`;
