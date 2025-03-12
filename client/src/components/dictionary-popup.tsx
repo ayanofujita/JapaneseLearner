@@ -46,6 +46,67 @@ function extractKanji(text: string): string[] {
   });
 }
 
+function KanjiStrokeOrder({ kanji }: { kanji: string }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const svgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadSvg = async () => {
+      try {
+        // Convert kanji to unicode for URL
+        const code = kanji.charCodeAt(0).toString(16).padStart(5, '0');
+        const response = await fetch(`https://cdn.jsdelivr.net/npm/@kanji-vg/core@0.2.0/kanji/${code}.svg`);
+        if (!response.ok) throw new Error('Failed to load SVG');
+
+        const svg = await response.text();
+        if (svgRef.current) {
+          svgRef.current.innerHTML = svg;
+          // Add animation classes to paths
+          const paths = svgRef.current.querySelectorAll('path');
+          paths.forEach((path, index) => {
+            path.style.strokeDasharray = path.getTotalLength().toString();
+            path.style.strokeDashoffset = path.getTotalLength().toString();
+            path.style.animation = `strokeAnimation 1s ${index * 0.5}s forwards`;
+          });
+        }
+      } catch (error) {
+        console.error('Error loading stroke order:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSvg();
+  }, [kanji]);
+
+  return (
+    <div className="relative">
+      <style>
+        {`
+          @keyframes strokeAnimation {
+            to {
+              stroke-dashoffset: 0;
+            }
+          }
+          .kanji-svg path {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+          }
+        `}
+      </style>
+      <div 
+        ref={svgRef} 
+        className="kanji-svg w-24 h-24 mx-auto"
+      >
+        {isLoading && <p className="text-sm text-center">Loading stroke order...</p>}
+      </div>
+    </div>
+  );
+}
+
 export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -179,6 +240,8 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
                               {details.jlpt && <div>JLPT N{details.jlpt}</div>}
                             </div>
                           </div>
+
+                          <KanjiStrokeOrder kanji={kanji} />
 
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Meanings:</p>
