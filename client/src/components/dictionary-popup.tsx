@@ -64,9 +64,10 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
           // Add animation classes to paths
           const paths = svgRef.current.querySelectorAll('path');
           paths.forEach((path, index) => {
-            path.style.strokeDasharray = path.getTotalLength().toString();
-            path.style.strokeDashoffset = path.getTotalLength().toString();
-            path.style.animation = `strokeAnimation 1s ${index * 0.5}s forwards`;
+            const length = path.getTotalLength();
+            path.style.strokeDasharray = `${length}`;
+            path.style.strokeDashoffset = `${length}`;
+            path.style.animation = `strokeAnimation 2s ${index * 0.8}s ease forwards`;
           });
         }
       } catch (error) {
@@ -84,9 +85,21 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
       <style>
         {`
           @keyframes strokeAnimation {
-            to {
+            0% {
+              stroke-dashoffset: var(--stroke-length);
+            }
+            100% {
               stroke-dashoffset: 0;
             }
+          }
+          .kanji-svg {
+            background-color: var(--background);
+            border-radius: 8px;
+            padding: 1rem;
+          }
+          .kanji-svg svg {
+            width: 100%;
+            height: 100%;
           }
           .kanji-svg path {
             fill: none;
@@ -94,12 +107,13 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
             stroke-width: 3;
             stroke-linecap: round;
             stroke-linejoin: round;
+            --stroke-length: 1000;
           }
         `}
       </style>
       <div 
         ref={svgRef} 
-        className="kanji-svg w-24 h-24 mx-auto"
+        className="kanji-svg w-32 h-32 mx-auto"
       >
         {isLoading && <p className="text-sm text-center">Loading stroke order...</p>}
       </div>
