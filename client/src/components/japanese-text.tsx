@@ -1,74 +1,92 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import DictionaryPopup from "./dictionary-popup";
 
-interface JapaneseTextProps {
-  text: string;
-  showFurigana?: boolean;
-}
-
-export default function JapaneseText({ text, showFurigana = true }: JapaneseTextProps) {
+export default function JapaneseText({ text }: { text: string }) {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
+  const [showFurigana, setShowFurigana] = useState(true);
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleWordClick = (e: React.MouseEvent, word: string) => {
-    // Don't show popup for punctuation marks
-    if (/^[、。！？]+$/.test(word)) return;
+  const handleWordClick = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
 
-    setSelectedWord(word);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setPopupPosition({
-      x: rect.left,
-      y: rect.bottom + window.scrollY
-    });
-    e.stopPropagation();
+    // Remove highlight from previously selected word
+    if (selectedElement) {
+      selectedElement.classList.remove("bg-primary/10");
+    }
+
+    // Find the word container (jp-word span)
+    const wordElement = target.closest('.jp-word');
+    if (wordElement) {
+      // Get the bounding rectangle of the clicked element
+      const rect = wordElement.getBoundingClientRect();
+      const containerRect = containerRef.current?.getBoundingClientRect();
+
+      // Calculate popup position - now closer to the word
+      const popupX = Math.min(
+        rect.left,
+        (containerRect?.right || window.innerWidth) - 300 // Ensure popup doesn't overflow container
+      );
+      const popupY = rect.top + rect.height + 5; // Position just below the word
+
+      // Add highlight to the word
+      wordElement.classList.add("bg-primary/10");
+      setSelectedElement(wordElement);
+
+      // Get the full word text by removing all rt content
+      const rtElements = wordElement.querySelectorAll('rt');
+      let fullWord = wordElement.textContent || '';
+      rtElements.forEach(rt => {
+        fullWord = fullWord.replace(rt.textContent || '', '');
+      });
+
+      setSelectedWord(fullWord.trim());
+      setPopupPosition({ x: popupX, y: popupY });
+    }
   };
 
-  const handleClosePopup = () => {
-    setSelectedWord(null);
-  };
-
-  const handleContainerClick = () => {
-    setSelectedWord(null);
-  };
-
-  // Process text to handle furigana toggling
-  const processedText = showFurigana 
-    ? text 
-    : text.replace(/<ruby>(.*?)\|.*?<\/ruby>/g, '$1')
-          .replace(/<ruby>(.*?)<rt>.*?<\/rt><\/ruby>/g, '$1');
-
-  // Instead of rendering text as components, use dangerouslySetInnerHTML
-  // to properly render the HTML tags, but add click handlers via event delegation
   return (
-    <div className="relative">
-      <div 
-        className={`leading-loose ${showFurigana ? '' : 'no-furigana'}`}
-        onClick={(e) => {
-          // Use event delegation to handle clicks
-          const target = e.target as HTMLElement;
+    <Card className="p-6 relative" ref={containerRef}>
+      <div className="flex items-center justify-end space-x-2 mb-4">
+        <Switch
+          id="furigana-mode"
+          checked={showFurigana}
+          onCheckedChange={setShowFurigana}
+        />
+        <Label htmlFor="furigana-mode">Show Furigana</Label>
+      </div>
 
-          // If clicking on a word within a ruby tag or a span with jp-word class
-          if (target.closest('ruby') || target.classList.contains('jp-word')) {
-            const word = target.textContent || '';
-            if (word.trim() !== '') {
-              handleWordClick(e, word);
-            }
-            return;
-          }
-
-          // Otherwise, close any popup
-          handleContainerClick();
-        }}
-        dangerouslySetInnerHTML={{ __html: processedText }}
+      <div
+        className={`
+          text-lg leading-relaxed break-words
+          ${!showFurigana ? '[&_rt]:hidden [&_rt]:absolute [&_rt]:top-0' : '[&_rt]:block'}
+          [&_ruby]:inline-flex [&_ruby]:flex-col [&_ruby]:items-center [&_ruby]:justify-center
+          [&_ruby]:relative [&_ruby]:leading-normal
+          [&_.jp-word]:hover:cursor-pointer [&_.jp-word]:rounded
+          [&_.jp-word]:transition-colors
+        `}
+        onClick={handleWordClick}
+        dangerouslySetInnerHTML={{ __html: text }}
       />
 
-      {selectedWord && (
+      {selectedWord && popupPosition && (
         <DictionaryPopup
           word={selectedWord}
           position={popupPosition}
-          onClose={handleClosePopup}
+          onClose={() => {
+            setSelectedWord(null);
+            setPopupPosition(null);
+            if (selectedElement) {
+              selectedElement.classList.remove("bg-primary/10");
+              setSelectedElement(null);
+            }
+          }}
         />
       )}
-    </div>
+    </Card>
   );
 }
