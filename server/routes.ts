@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema } from "@shared/schema";
-import { translateText, addFurigana, translateTextWithFurigana } from "./openai";
+import { translateText, addFurigana } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
 
@@ -14,12 +14,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { text, tone } = translateRequestSchema.parse(req.body);
 
-      // Use the combined function instead of two separate calls
-      const japaneseTextWithFurigana = await translateTextWithFurigana(text, tone);
+      const japaneseText = await translateText(text, tone);
+      const withFurigana = await addFurigana(japaneseText);
 
       const translation = await storage.createTranslation({
         englishText: text,
-        japaneseText: japaneseTextWithFurigana,
+        japaneseText: withFurigana,
         tone,
         userId: req.user?.id
       });
