@@ -5,6 +5,7 @@ import { BookmarkIcon, XIcon, ChevronDownIcon } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Collapsible,
   CollapsibleContent,
@@ -49,6 +50,7 @@ function extractKanji(text: string): string[] {
 export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isKanjiOpen, setIsKanjiOpen] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
   const [selectedKanji, setSelectedKanji] = useState<string[]>(extractKanji(word));
@@ -113,26 +115,38 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  const popupStyle = {
-    position: "fixed" as const,
-    left: Math.min(position.x, window.innerWidth - 300),
-    top: Math.min(position.y, window.innerHeight - 400),
-    zIndex: 50,
-    width: 300,
-    maxHeight: 400,
-    overflowY: 'auto' as const
-  };
+  const popupStyle = isMobile
+    ? {
+        position: "fixed" as const,
+        left: "50%" as const,
+        top: "50%" as const,
+        transform: "translate(-50%, -50%)" as const,
+        zIndex: 50,
+        width: "90%" as const,
+        maxWidth: "400px",
+        maxHeight: "80vh",
+        overflowY: "auto" as const
+      }
+    : {
+        position: "fixed" as const,
+        left: Math.min(position.x, window.innerWidth - 300),
+        top: Math.min(position.y, window.innerHeight - 400),
+        zIndex: 50,
+        width: 300,
+        maxHeight: 400,
+        overflowY: "auto" as const
+      };
 
   return (
-    <Card ref={popupRef} style={popupStyle} className="p-4">
+    <Card ref={popupRef} style={popupStyle} className={`p-4 ${isMobile ? 'shadow-lg' : ''}`}>
       <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-bold">{word}</h3>
+        <div className="flex-1 mr-2">
+          <h3 className="text-lg font-bold break-all">{word}</h3>
           {wordData?.reading && (
             <p className="text-sm text-muted-foreground">{wordData.reading}</p>
           )}
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={onClose}>
           <XIcon className="h-4 w-4" />
         </Button>
       </div>
