@@ -16,6 +16,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/study" component={Study} />
+        <Route path="/auth" component={Auth} />
         <Route path="/reader" component={Reader} /> {/* Added Reader route */}
         <Route component={NotFound} />
       </Switch>
