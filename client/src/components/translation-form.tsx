@@ -32,10 +32,18 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
       });
     },
     onError: (error) => {
+      console.error("Translation error:", error);
+
+      // Check if this is an authentication error
+      const isAuthError = error instanceof Error && 
+        (error.message.includes("401") || error.message.toLowerCase().includes("authentication"));
+
       toast({
-        title: "Translation failed",
-        description: error.message,
-        variant: "destructive"
+        variant: "destructive",
+        title: isAuthError ? "Login Required" : "Translation Failed",
+        description: isAuthError 
+          ? "Please sign up or log in to translate text."
+          : (error instanceof Error ? error.message : "Failed to translate text"),
       });
     }
   });
