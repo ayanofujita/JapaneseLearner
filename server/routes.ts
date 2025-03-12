@@ -41,7 +41,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/translations", async (req, res) => {
     try {
-      const translations = await storage.getTranslations(req.user?.id);
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const translations = await storage.getTranslations(req.user.id);
       res.json(translations);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
