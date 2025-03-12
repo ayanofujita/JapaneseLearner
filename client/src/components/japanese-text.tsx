@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import DictionaryPopup from "./dictionary-popup";
 
+import { useState } from "react";
+import DictionaryPopup from "./dictionary-popup";
+
 interface JapaneseTextProps {
   text: string;
   showFurigana?: boolean;
@@ -32,19 +35,19 @@ export default function JapaneseText({ text, showFurigana = true }: JapaneseText
   };
 
   // Process text to handle furigana toggling
-  const processText = () => {
-    if (showFurigana) {
-      return text;
-    } else {
-      // Strip ruby annotations but keep the base text
-      return text.replace(/<ruby>(.*?)\|.*?<\/ruby>/g, '$1')
-                .replace(/<ruby>(.*?)<rt>.*?<\/rt><\/ruby>/g, '$1');
-    }
-  };
+  const processedText = showFurigana 
+    ? text 
+    : text.replace(/<ruby>(.*?)\|.*?<\/ruby>/g, '$1')
+          .replace(/<ruby>(.*?)<rt>.*?<\/rt><\/ruby>/g, '$1');
 
-  // Split text without removing ruby annotations
-  const renderText = () => {
-    const processedText = processText();
+  return (
+    <div 
+      className={`leading-loose ${showFurigana ? '' : 'no-furigana'}`}
+      onClick={handleContainerClick}
+      dangerouslySetInnerHTML={{ __html: processedText }}
+    />
+  );
+}sText();
 
     return (
       <div 

@@ -1,5 +1,22 @@
 @tailwind base;
 @tailwind components;
+
+/* Japanese text styling */
+.jp-word {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.jp-word:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.no-furigana rt {
+  display: none;
+}
+
 @tailwind utilities;
 
 @layer base {
