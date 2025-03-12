@@ -65,13 +65,16 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
           const paths = svgRef.current.querySelectorAll('path');
           paths.forEach((path, index) => {
             const length = path.getTotalLength();
-            path.style.strokeDasharray = `${length}`;
-            path.style.strokeDashoffset = `${length}`;
-            path.style.animation = `strokeAnimation 2s ${index * 0.8}s ease forwards`;
+            path.style.strokeDasharray = length.toString();
+            path.style.strokeDashoffset = length.toString();
+            path.style.animation = `strokeAnimation 1.5s ${index * 0.5}s ease forwards`;
           });
         }
       } catch (error) {
         console.error('Error loading stroke order:', error);
+        if (svgRef.current) {
+          svgRef.current.innerHTML = `<div class="text-sm text-red-500">Failed to load stroke order</div>`;
+        }
       } finally {
         setIsLoading(false);
       }
@@ -85,10 +88,10 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
       <style>
         {`
           @keyframes strokeAnimation {
-            0% {
+            from {
               stroke-dashoffset: var(--stroke-length);
             }
-            100% {
+            to {
               stroke-dashoffset: 0;
             }
           }
@@ -96,6 +99,7 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
             background-color: var(--background);
             border-radius: 8px;
             padding: 1rem;
+            margin: 1rem 0;
           }
           .kanji-svg svg {
             width: 100%;
@@ -104,18 +108,21 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
           .kanji-svg path {
             fill: none;
             stroke: currentColor;
-            stroke-width: 3;
+            stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
-            --stroke-length: 1000;
           }
         `}
       </style>
       <div 
         ref={svgRef} 
-        className="kanji-svg w-32 h-32 mx-auto"
+        className="kanji-svg w-32 h-32 mx-auto flex items-center justify-center"
       >
-        {isLoading && <p className="text-sm text-center">Loading stroke order...</p>}
+        {isLoading && (
+          <div className="text-sm text-center text-muted-foreground">
+            Loading stroke order...
+          </div>
+        )}
       </div>
     </div>
   );
