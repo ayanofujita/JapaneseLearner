@@ -11,7 +11,7 @@ export const users = pgTable("users", {
 
 export const translations = pgTable("translations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   englishText: text("english_text").notNull(),
   japaneseText: text("japanese_text").notNull(),
   tone: text("tone").notNull(), // 'casual' | 'formal'
@@ -20,7 +20,7 @@ export const translations = pgTable("translations", {
 
 export const savedWords = pgTable("saved_words", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   word: text("word").notNull(),
   reading: text("reading").notNull(),
   meaning: text("meaning").notNull(),

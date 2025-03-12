@@ -12,6 +12,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/translate", async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
       const { text, tone } = translateRequestSchema.parse(req.body);
 
       const japaneseText = await translateText(text, tone);
@@ -21,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         englishText: text,
         japaneseText: withFurigana,
         tone,
-        userId: req.user?.id
+        userId: req.user.id
       });
 
       res.json(translation);
@@ -47,10 +51,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/words", async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
       const word = insertSavedWordSchema.parse(req.body);
       const savedWord = await storage.saveWord({
         ...word,
-        userId: req.user?.id
+        userId: req.user.id
       });
       res.json(savedWord);
     } catch (error: unknown) {
