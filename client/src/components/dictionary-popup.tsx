@@ -18,10 +18,13 @@ interface DictionaryPopupProps {
 }
 
 interface WordData {
-  reading?: string;
-  meaning?: string;
-  partsOfSpeech?: string[];
-  examples?: string[];
+  reading: string;
+  meaning: string;
+  partsOfSpeech: string[];
+  examples: Array<{
+    japanese: string;
+    english: string;
+  }>;
 }
 
 export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
@@ -30,7 +33,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
   const [isKanjiOpen, setIsKanjiOpen] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
 
-  const { data: wordData, isLoading } = useQuery({
+  const { data: wordData, isLoading } = useQuery<WordData | null>({
     queryKey: ["/api/dictionary", word],
     queryFn: async () => {
       const res = await fetch(`/api/dictionary/${encodeURIComponent(word)}`);
@@ -42,9 +45,9 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
       const entry = data.data[0];
       return {
         reading: entry.japanese[0]?.reading || "",
-        meaning: entry.senses[0]?.english_definitions.join("; "),
-        partsOfSpeech: entry.senses[0]?.parts_of_speech,
-        examples: entry.senses[0]?.info || []
+        meaning: entry.senses[0]?.english_definitions.join("; ") || "",
+        partsOfSpeech: entry.senses[0]?.parts_of_speech || [],
+        examples: entry.senses[0]?.examples || []
       };
     }
   });
@@ -103,7 +106,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
           <p className="text-sm text-muted-foreground">Loading dictionary data...</p>
         ) : wordData ? (
           <>
-            {wordData.partsOfSpeech && (
+            {wordData.partsOfSpeech.length > 0 && (
               <p className="text-xs text-muted-foreground">
                 {wordData.partsOfSpeech.join(", ")}
               </p>
@@ -126,7 +129,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
               </CollapsibleContent>
             </Collapsible>
 
-            {wordData.examples && wordData.examples.length > 0 && (
+            {wordData.examples.length > 0 && (
               <Collapsible open={isExamplesOpen} onOpenChange={setIsExamplesOpen}>
                 <CollapsibleTrigger asChild>
                   <Button
@@ -139,8 +142,11 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="p-2 space-y-2">
-                  {wordData.examples.map((example, i) => (
-                    <p key={i} className="text-sm">{example}</p>
+                  {wordData.examples.map((example, index) => (
+                    <div key={index} className="text-sm space-y-1">
+                      <p className="font-medium">{example.japanese}</p>
+                      <p className="text-muted-foreground">{example.english}</p>
+                    </div>
                   ))}
                 </CollapsibleContent>
               </Collapsible>
