@@ -48,40 +48,62 @@ function extractKanji(text: string): string[] {
 
 function KanjiStrokeOrder({ kanji }: { kanji: string }) {
   const [isLoading, setIsLoading] = useState(true);
-  const svgRef = useRef<HTMLDivElement>(null);
-
+  const [error, setError] = useState<string | null>(null);
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  
   useEffect(() => {
     const loadSvg = async () => {
+      setIsLoading(true);
+      setError(null);
+      setSvgContent(null);
+      
       try {
         // Convert kanji to unicode for URL
         const code = kanji.charCodeAt(0).toString(16).padStart(5, '0');
         const response = await fetch(`https://cdn.jsdelivr.net/npm/@kanji-vg/core@0.2.0/kanji/${code}.svg`);
-        if (!response.ok) throw new Error('Failed to load SVG');
-
+        
+        if (!response.ok) {
+          throw new Error('Failed to load SVG');
+        }
+        
         const svg = await response.text();
-        if (svgRef.current) {
-          svgRef.current.innerHTML = svg;
-          // Add animation classes to paths
-          const paths = svgRef.current.querySelectorAll('path');
-          paths.forEach((path, index) => {
-            const length = path.getTotalLength();
-            path.style.strokeDasharray = length.toString();
-            path.style.strokeDashoffset = length.toString();
-            path.style.animation = `strokeAnimation 1.5s ${index * 0.5}s ease forwards`;
-          });
-        }
-      } catch (error: unknown) {
+        setSvgContent(svg);
+      } catch (error) {
         console.error('Error loading stroke order:', error);
-        if (svgRef.current) {
-          svgRef.current.innerHTML = `<div class="text-sm text-red-500">Failed to load stroke order</div>`;
-        }
+        setError('Failed to load stroke order');
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     loadSvg();
+    
+    // No DOM cleanup needed as we're using React state
   }, [kanji]);
+  
+  // Effect for animating paths after SVG is loaded into the DOM
+  useEffect(() => {
+    if (!svgContent) return;
+    
+    // Use setTimeout to ensure the SVG is in the DOM
+    const timer = setTimeout(() => {
+      try {
+        const paths = document.querySelectorAll(`.kanji-svg-${kanji} path`);
+        paths.forEach((path, index) => {
+          if (path instanceof SVGPathElement) {
+            const length = path.getTotalLength();
+            path.style.strokeDasharray = length.toString();
+            path.style.strokeDashoffset = length.toString();
+            path.style.animation = `strokeAnimation 1.5s ${index * 0.5}s ease forwards`;
+          }
+        });
+      } catch (err) {
+        console.error('Error animating paths:', err);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [svgContent, kanji]);
 
   return (
     <div className="relative">
@@ -115,13 +137,22 @@ function KanjiStrokeOrder({ kanji }: { kanji: string }) {
         `}
       </style>
       <div 
-        ref={svgRef} 
-        className="kanji-svg w-32 h-32 mx-auto flex items-center justify-center"
+        className={`kanji-svg kanji-svg-${kanji} w-32 h-32 mx-auto flex items-center justify-center`}
       >
         {isLoading && (
           <div className="text-sm text-center text-muted-foreground">
             Loading stroke order...
           </div>
+        )}
+        
+        {error && (
+          <div className="text-sm text-red-500">
+            {error}
+          </div>
+        )}
+        
+        {!isLoading && !error && svgContent && (
+          <div dangerouslySetInnerHTML={{ __html: svgContent }} />
         )}
       </div>
     </div>
