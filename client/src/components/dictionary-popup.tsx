@@ -40,156 +40,18 @@ interface KanjiDetails {
 }
 
 function extractKanji(text: string): string[] {
-  return Array.from(text).filter((char) => {
+  return Array.from(text).filter(char => {
     const code = char.charCodeAt(0);
-    return code >= 0x4e00 && code <= 0x9fff;
+    return (code >= 0x4E00 && code <= 0x9FFF);
   });
 }
 
-function KanjiStrokeOrder({ kanji }: { kanji: string }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [svgContent, setSvgContent] = useState<string | null>(null);
-  const svgContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadSvg = async () => {
-      setIsLoading(true);
-      setError(null);
-      setSvgContent(null);
-
-      try {
-        // Convert kanji to unicode for URL
-        const code = kanji.charCodeAt(0).toString(16).padStart(5, "0");
-        const response = await fetch(
-          `https://cdn.jsdelivr.net/npm/@kanji-vg/core@0.2.0/kanji/${code}.svg`,
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to load SVG");
-        }
-
-        const svg = await response.text();
-        // Add a class to the SVG element for easier selection
-        const processedSvg = svg.replace(
-          "<svg",
-          `<svg class="kanji-svg-element"`,
-        );
-        setSvgContent(processedSvg);
-      } catch (error) {
-        console.error("Error loading stroke order:", error);
-        setError("Failed to load stroke order");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSvg();
-  }, [kanji]);
-
-  // Effect for animating paths after SVG is loaded into the DOM
-  useEffect(() => {
-    if (!svgContent || !svgContainerRef.current) return;
-
-    // Use MutationObserver to ensure the SVG is fully rendered in the DOM
-    const observer = new MutationObserver(() => {
-      const svgElement =
-        svgContainerRef.current?.querySelector(".kanji-svg-element");
-      if (!svgElement) return;
-
-      // Once we've found the SVG, disconnect the observer
-      observer.disconnect();
-
-      // Get all paths within the SVG
-      const paths = svgElement.querySelectorAll("path");
-
-      paths.forEach((path, index) => {
-        if (path instanceof SVGPathElement) {
-          const length = path.getTotalLength();
-
-          // Set the CSS variables on the path itself
-          path.style.setProperty("--stroke-length", `${length}px`);
-          path.style.strokeDasharray = `${length}px`;
-          path.style.strokeDashoffset = `${length}px`;
-
-          // Apply animation with delay based on stroke order
-          path.style.animation = `strokeAnimation 1.5s ${index * 0.5}s ease forwards`;
-        }
-      });
-    });
-
-    // Start observing
-    observer.observe(svgContainerRef.current, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => observer.disconnect();
-  }, [svgContent]);
-
-  return (
-    <div className="relative">
-      <style>
-        {`
-          @keyframes strokeAnimation {
-            from {
-              stroke-dashoffset: var(--stroke-length);
-            }
-            to {
-              stroke-dashoffset: 0;
-            }
-          }
-          .kanji-svg {
-            background-color: var(--background);
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-          }
-          .kanji-svg svg {
-            width: 100%;
-            height: 100%;
-          }
-          .kanji-svg path {
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-          }
-        `}
-      </style>
-      <div
-        ref={svgContainerRef}
-        className={`kanji-svg w-32 h-32 mx-auto flex items-center justify-center`}
-      >
-        {isLoading && (
-          <div className="text-sm text-center text-muted-foreground">
-            Loading stroke order...
-          </div>
-        )}
-
-        {error && <div className="text-sm text-red-500">{error}</div>}
-
-        {!isLoading && !error && svgContent && (
-          <div dangerouslySetInnerHTML={{ __html: svgContent }} />
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function DictionaryPopup({
-  word,
-  position,
-  onClose,
-}: DictionaryPopupProps) {
+export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [isKanjiOpen, setIsKanjiOpen] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
-  const [selectedKanji, setSelectedKanji] = useState<string[]>(
-    extractKanji(word),
-  );
+  const [selectedKanji, setSelectedKanji] = useState<string[]>(extractKanji(word));
 
   const { data: wordData, isLoading } = useQuery<WordData | null>({
     queryKey: ["/api/dictionary", word],
@@ -205,14 +67,12 @@ export default function DictionaryPopup({
         reading: entry.japanese[0]?.reading || "",
         meaning: entry.senses[0]?.english_definitions.join("; ") || "",
         partsOfSpeech: entry.senses[0]?.parts_of_speech || [],
-        examples: entry.senses[0]?.examples || [],
+        examples: entry.senses[0]?.examples || []
       };
-    },
+    }
   });
 
-  const { data: kanjiDetails, isLoading: isLoadingKanji } = useQuery<
-    Record<string, KanjiDetails>
-  >({
+  const { data: kanjiDetails, isLoading: isLoadingKanji } = useQuery<Record<string, KanjiDetails>>({
     queryKey: ["/api/kanji", selectedKanji],
     queryFn: async () => {
       const details: Record<string, KanjiDetails> = {};
@@ -222,36 +82,29 @@ export default function DictionaryPopup({
           if (res.ok) {
             details[kanji] = await res.json();
           }
-        }),
+        })
       );
       return details;
     },
-    enabled: selectedKanji.length > 0 && isKanjiOpen,
+    enabled: selectedKanji.length > 0 && isKanjiOpen
   });
 
   const { mutate: saveWord } = useMutation({
-    mutationFn: async (data: {
-      word: string;
-      reading: string;
-      meaning: string;
-    }) => {
+    mutationFn: async (data: { word: string; reading: string; meaning: string }) => {
       const res = await apiRequest("POST", "/api/words", data);
       return res.json();
     },
     onSuccess: () => {
       toast({
         title: "Word saved",
-        description: "Word has been added to your study list",
+        description: "Word has been added to your study list"
       });
-    },
+    }
   });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node)
-      ) {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         onClose();
       }
     }
@@ -267,7 +120,7 @@ export default function DictionaryPopup({
     zIndex: 50,
     width: 300,
     maxHeight: 400,
-    overflowY: "auto" as const,
+    overflowY: 'auto' as const
   };
 
   return (
@@ -286,9 +139,7 @@ export default function DictionaryPopup({
 
       <div className="space-y-3">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">
-            Loading dictionary data...
-          </p>
+          <p className="text-sm text-muted-foreground">Loading dictionary data...</p>
         ) : wordData ? (
           <>
             {wordData.partsOfSpeech.length > 0 && (
@@ -307,42 +158,31 @@ export default function DictionaryPopup({
                     className="w-full flex justify-between items-center"
                   >
                     <span>Kanji Details</span>
-                    <ChevronDownIcon
-                      className={`h-4 w-4 transition-transform ${isKanjiOpen ? "transform rotate-180" : ""}`}
-                    />
+                    <ChevronDownIcon className={`h-4 w-4 transition-transform ${isKanjiOpen ? 'transform rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="p-2 space-y-4">
                   {isLoadingKanji ? (
                     <p className="text-sm">Loading kanji details...</p>
                   ) : kanjiDetails ? (
-                    selectedKanji.map((kanji) => {
+                    selectedKanji.map(kanji => {
                       const details = kanjiDetails[kanji];
                       if (!details) return null;
 
                       return (
-                        <div
-                          key={kanji}
-                          className="border rounded p-2 space-y-2"
-                        >
+                        <div key={kanji} className="border rounded p-2 space-y-2">
                           <div className="flex justify-between items-start">
                             <span className="text-2xl font-bold">{kanji}</span>
                             <div className="text-xs text-muted-foreground">
                               <div>Strokes: {details.stroke_count}</div>
-                              {details.grade && (
-                                <div>Grade: {details.grade}</div>
-                              )}
+                              {details.grade && <div>Grade: {details.grade}</div>}
                               {details.jlpt && <div>JLPT N{details.jlpt}</div>}
                             </div>
                           </div>
 
-                          <KanjiStrokeOrder kanji={kanji} />
-
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Meanings:</p>
-                            <p className="text-sm">
-                              {details.meanings.join(", ")}
-                            </p>
+                            <p className="text-sm">{details.meanings.join(", ")}</p>
                           </div>
 
                           <div className="space-y-1">
@@ -369,10 +209,7 @@ export default function DictionaryPopup({
             )}
 
             {wordData.examples.length > 0 && (
-              <Collapsible
-                open={isExamplesOpen}
-                onOpenChange={setIsExamplesOpen}
-              >
+              <Collapsible open={isExamplesOpen} onOpenChange={setIsExamplesOpen}>
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
@@ -380,9 +217,7 @@ export default function DictionaryPopup({
                     className="w-full flex justify-between items-center"
                   >
                     <span>Example Sentences</span>
-                    <ChevronDownIcon
-                      className={`h-4 w-4 transition-transform ${isExamplesOpen ? "transform rotate-180" : ""}`}
-                    />
+                    <ChevronDownIcon className={`h-4 w-4 transition-transform ${isExamplesOpen ? 'transform rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="p-2 space-y-2">
@@ -405,7 +240,7 @@ export default function DictionaryPopup({
                   saveWord({
                     word,
                     reading: wordData.reading,
-                    meaning: wordData.meaning,
+                    meaning: wordData.meaning
                   });
                 }
               }}
@@ -415,9 +250,7 @@ export default function DictionaryPopup({
             </Button>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No dictionary data found
-          </p>
+          <p className="text-sm text-muted-foreground">No dictionary data found</p>
         )}
       </div>
     </Card>
