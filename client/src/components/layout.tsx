@@ -15,7 +15,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <nav className="flex gap-4 items-center">
-              <span className="text-2xl font-bold text-primary">日本語学習</span>
+              <span className="text-2xl font-bold text-primary">漢字文脈</span>
               <Link href="/">
                 <span className={location === "/" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
                   Translate
