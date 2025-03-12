@@ -37,49 +37,31 @@ export default function JapaneseText({ text, showFurigana = true }: JapaneseText
     : text.replace(/<ruby>(.*?)\|.*?<\/ruby>/g, '$1')
           .replace(/<ruby>(.*?)<rt>.*?<\/rt><\/ruby>/g, '$1');
 
-  const renderText = () => {
-    return (
-      <div 
-        className="leading-loose" 
-        onClick={handleContainerClick}
-      >
-        {processedText.split(/(<ruby>.*?<\/ruby>|[^\s]+|\s+)/).filter(Boolean).map((part, index) => {
-          if (part.trim() === '') {
-            return part;
-          }
-
-          if (part.startsWith('<ruby>')) {
-            // Render the ruby tag as HTML
-            return (
-              <span 
-                key={index} 
-                dangerouslySetInnerHTML={{ __html: part }} 
-                onClick={(e) => {
-                  const content = part.replace(/<[^>]*>/g, '');
-                  handleWordClick(e, content.split('|')[0] || content);
-                }}
-                className="cursor-pointer hover:bg-accent hover:rounded"
-              />
-            );
-          }
-
-          return (
-            <span 
-              key={index} 
-              onClick={(e) => handleWordClick(e, part)}
-              className="cursor-pointer hover:bg-accent hover:rounded"
-            >
-              {part}
-            </span>
-          );
-        })}
-      </div>
-    );
-  };
-
+  // Instead of rendering text as components, use dangerouslySetInnerHTML
+  // to properly render the HTML tags, but add click handlers via event delegation
   return (
     <div className="relative">
-      {renderText()}
+      <div 
+        className={`leading-loose ${showFurigana ? '' : 'no-furigana'}`}
+        onClick={(e) => {
+          // Use event delegation to handle clicks
+          const target = e.target as HTMLElement;
+
+          // If clicking on a word within a ruby tag or a span with jp-word class
+          if (target.closest('ruby') || target.classList.contains('jp-word')) {
+            const word = target.textContent || '';
+            if (word.trim() !== '') {
+              handleWordClick(e, word);
+            }
+            return;
+          }
+
+          // Otherwise, close any popup
+          handleContainerClick();
+        }}
+        dangerouslySetInnerHTML={{ __html: processedText }}
+      />
+
       {selectedWord && (
         <DictionaryPopup
           word={selectedWord}

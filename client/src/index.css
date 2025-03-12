@@ -1,3 +1,9 @@
+
+/* Hide furigana when no-furigana class is applied */
+.no-furigana rt {
+  display: none;
+}
+
 @tailwind base;
 @tailwind components;
 
