@@ -32,7 +32,7 @@ A web application that translates English text to Japanese with customizable ton
 1. Clone the repository
    ```
    git clone <repository-url>
-   cd japanese-translation-app
+   cd JapaneseLearner
    ```
 
 2. Install dependencies
