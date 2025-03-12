@@ -5,6 +5,7 @@ import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema 
 import { translateText, addFurigana } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
+import { searchWord } from "./jisho";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes and middleware
@@ -57,21 +58,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid translation ID" });
       }
-      
+
       const translation = await storage.getTranslation(id);
       if (!translation) {
         return res.status(404).json({ message: "Translation not found" });
       }
-      
+
       if (translation.userId !== req.user.id) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       await storage.deleteTranslation(id);
       res.status(200).json({ message: "Translation deleted successfully" });
     } catch (error: unknown) {
@@ -131,6 +132,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';
       res.status(400).json({ message });
+    }
+  });
+
+  app.get("/api/dictionary/:word", async (req, res) => {
+    try {
+      const { word } = req.params;
+      const data = await searchWord(word);
+      res.json(data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      res.status(500).json({ message });
     }
   });
 
