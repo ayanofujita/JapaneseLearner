@@ -28,6 +28,7 @@ export interface IStorage {
   ): Promise<Translation>;
   getTranslations(userId: number): Promise<Translation[]>;
   getTranslation(id: number): Promise<Translation | undefined>;
+  deleteTranslation(id: number): Promise<void>;
 
   // Saved word methods
   saveWord(word: InsertSavedWord & { userId: number }): Promise<SavedWord>;
@@ -90,6 +91,10 @@ export class DatabaseStorage implements IStorage {
       .from(translations)
       .where(eq(translations.id, id));
     return translation;
+  }
+  
+  async deleteTranslation(id: number): Promise<void> {
+    await db.delete(translations).where(eq(translations.id, id));
   }
 
   // Saved word methods
