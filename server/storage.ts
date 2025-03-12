@@ -1,4 +1,10 @@
 import { translations, savedWords, users, type Translation, type InsertTranslation, type SavedWord, type InsertSavedWord, type User, type InsertUser } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   // User methods
@@ -15,100 +21,82 @@ export interface IStorage {
   saveWord(word: InsertSavedWord & { userId?: number }): Promise<SavedWord>;
   getSavedWords(userId?: number): Promise<SavedWord[]>;
   updateWordReview(id: number, nextReview: Date): Promise<SavedWord>;
+
+  // Session store
+  sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private translations: Map<number, Translation>;
-  private savedWords: Map<number, SavedWord>;
-  private userId: number = 1;
-  private translationId: number = 1;
-  private wordId: number = 1;
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.translations = new Map();
-    this.savedWords = new Map();
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
   }
 
   // User methods
   async createUser(user: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const newUser: User = {
-      id,
-      ...user,
-      createdAt: new Date()
-    };
-    this.users.set(id, newUser);
+    const [newUser] = await db.insert(users).values(user).returning();
     return newUser;
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
   }
 
   // Translation methods
   async createTranslation(translation: InsertTranslation & { userId?: number }): Promise<Translation> {
-    const id = this.translationId++;
-    const newTranslation: Translation = {
-      id,
-      ...translation,
-      userId: translation.userId || null,
-      createdAt: new Date()
-    };
-    this.translations.set(id, newTranslation);
+    const [newTranslation] = await db.insert(translations).values(translation).returning();
     return newTranslation;
   }
 
   async getTranslations(userId?: number): Promise<Translation[]> {
-    const translations = Array.from(this.translations.values());
-    return userId 
-      ? translations.filter(t => t.userId === userId)
-      : translations;
+    if (userId) {
+      return await db.select().from(translations).where(eq(translations.userId, userId));
+    }
+    return await db.select().from(translations);
   }
 
   async getTranslation(id: number): Promise<Translation | undefined> {
-    return this.translations.get(id);
+    const [translation] = await db.select().from(translations).where(eq(translations.id, id));
+    return translation;
   }
 
   // Saved word methods
   async saveWord(word: InsertSavedWord & { userId?: number }): Promise<SavedWord> {
-    const id = this.wordId++;
-    const newWord: SavedWord = {
-      id,
-      ...word,
-      userId: word.userId || null,
-      nextReview: new Date(),
-      reviewCount: 0,
-      context: word.context || null
-    };
-    this.savedWords.set(id, newWord);
+    const [newWord] = await db.insert(savedWords).values(word).returning();
     return newWord;
   }
 
   async getSavedWords(userId?: number): Promise<SavedWord[]> {
-    const words = Array.from(this.savedWords.values());
-    return userId 
-      ? words.filter(w => w.userId === userId)
-      : words;
+    if (userId) {
+      return await db.select().from(savedWords).where(eq(savedWords.userId, userId));
+    }
+    return await db.select().from(savedWords);
   }
 
   async updateWordReview(id: number, nextReview: Date): Promise<SavedWord> {
-    const word = this.savedWords.get(id);
+    const [word] = await db.select().from(savedWords).where(eq(savedWords.id, id));
     if (!word) throw new Error('Word not found');
 
-    const updatedWord: SavedWord = {
-      ...word,
-      nextReview,
-      reviewCount: (word.reviewCount || 0) + 1
-    };
-    this.savedWords.set(id, updatedWord);
+    const [updatedWord] = await db
+      .update(savedWords)
+      .set({
+        nextReview,
+        reviewCount: (word.reviewCount || 0) + 1
+      })
+      .where(eq(savedWords.id, id))
+      .returning();
+
     return updatedWord;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
