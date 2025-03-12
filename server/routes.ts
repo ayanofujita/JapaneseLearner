@@ -6,6 +6,7 @@ import { translateText, addFurigana } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
 import { searchWord } from "./jisho";
+import { getKanjiDetails } from "./kanji";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes and middleware
@@ -139,6 +140,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { word } = req.params;
       const data = await searchWord(word);
+      res.json(data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      res.status(500).json({ message });
+    }
+  });
+
+  app.get("/api/kanji/:character", async (req, res) => {
+    try {
+      const { character } = req.params;
+      const data = await getKanjiDetails(character);
       res.json(data);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error occurred';

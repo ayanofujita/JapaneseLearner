@@ -27,11 +27,31 @@ interface WordData {
   }>;
 }
 
+interface KanjiDetails {
+  kanji: string;
+  grade?: number;
+  stroke_count: number;
+  meanings: string[];
+  kun_readings: string[];
+  on_readings: string[];
+  name_readings: string[];
+  jlpt?: number;
+  unicode: string;
+}
+
+function extractKanji(text: string): string[] {
+  return Array.from(text).filter(char => {
+    const code = char.charCodeAt(0);
+    return (code >= 0x4E00 && code <= 0x9FFF);
+  });
+}
+
 export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [isKanjiOpen, setIsKanjiOpen] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
+  const [selectedKanji, setSelectedKanji] = useState<string[]>(extractKanji(word));
 
   const { data: wordData, isLoading } = useQuery<WordData | null>({
     queryKey: ["/api/dictionary", word],
@@ -50,6 +70,23 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
         examples: entry.senses[0]?.examples || []
       };
     }
+  });
+
+  const { data: kanjiDetails, isLoading: isLoadingKanji } = useQuery<Record<string, KanjiDetails>>({
+    queryKey: ["/api/kanji", selectedKanji],
+    queryFn: async () => {
+      const details: Record<string, KanjiDetails> = {};
+      await Promise.all(
+        selectedKanji.map(async (kanji) => {
+          const res = await fetch(`/api/kanji/${encodeURIComponent(kanji)}`);
+          if (res.ok) {
+            details[kanji] = await res.json();
+          }
+        })
+      );
+      return details;
+    },
+    enabled: selectedKanji.length > 0 && isKanjiOpen
   });
 
   const { mutate: saveWord } = useMutation({
@@ -76,7 +113,6 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // Calculate position to keep popup in viewport
   const popupStyle = {
     position: "fixed" as const,
     left: Math.min(position.x, window.innerWidth - 300),
@@ -113,21 +149,64 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
             )}
             <p className="text-sm">{wordData.meaning}</p>
 
-            <Collapsible open={isKanjiOpen} onOpenChange={setIsKanjiOpen}>
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full flex justify-between items-center"
-                >
-                  <span>Kanji Details</span>
-                  <ChevronDownIcon className={`h-4 w-4 transition-transform ${isKanjiOpen ? 'transform rotate-180' : ''}`} />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-2 space-y-2">
-                <p className="text-sm">Kanji details coming soon...</p>
-              </CollapsibleContent>
-            </Collapsible>
+            {selectedKanji.length > 0 && (
+              <Collapsible open={isKanjiOpen} onOpenChange={setIsKanjiOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full flex justify-between items-center"
+                  >
+                    <span>Kanji Details</span>
+                    <ChevronDownIcon className={`h-4 w-4 transition-transform ${isKanjiOpen ? 'transform rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-2 space-y-4">
+                  {isLoadingKanji ? (
+                    <p className="text-sm">Loading kanji details...</p>
+                  ) : kanjiDetails ? (
+                    selectedKanji.map(kanji => {
+                      const details = kanjiDetails[kanji];
+                      if (!details) return null;
+
+                      return (
+                        <div key={kanji} className="border rounded p-2 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <span className="text-2xl font-bold">{kanji}</span>
+                            <div className="text-xs text-muted-foreground">
+                              <div>Strokes: {details.stroke_count}</div>
+                              {details.grade && <div>Grade: {details.grade}</div>}
+                              {details.jlpt && <div>JLPT N{details.jlpt}</div>}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">Meanings:</p>
+                            <p className="text-sm">{details.meanings.join(", ")}</p>
+                          </div>
+
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">Readings:</p>
+                            {details.on_readings.length > 0 && (
+                              <p className="text-sm">
+                                On: {details.on_readings.join(", ")}
+                              </p>
+                            )}
+                            {details.kun_readings.length > 0 && (
+                              <p className="text-sm">
+                                Kun: {details.kun_readings.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm">No kanji details available</p>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
 
             {wordData.examples.length > 0 && (
               <Collapsible open={isExamplesOpen} onOpenChange={setIsExamplesOpen}>
