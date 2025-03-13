@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { translateRequestSchema } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -11,9 +12,35 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "./image-upload";
 import { PlusIcon, XIcon } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function TranslationForm({ onTranslate }: { onTranslate: (result: any) => void }) {
   const { toast } = useToast();
+  const [tagInputOpen, setTagInputOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  // Fetch all existing tags for suggestions
+  const { data: existingTags = [] } = useQuery<string[]>({
+    queryKey: ["/api/tags"],
+    queryFn: async () => {
+      const res = await fetch("/api/tags");
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data;
+    },
+  });
+
   const form = useForm({
     resolver: zodResolver(translateRequestSchema),
     defaultValues: {
@@ -54,7 +81,6 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
     onError: (error) => {
       console.error("Translation error:", error);
 
-      // Check if this is an authentication error
       const isAuthError = error instanceof Error &&
         (error.message.includes("401") || error.message.toLowerCase().includes("authentication"));
 
@@ -67,6 +93,11 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
       });
     }
   });
+
+  const filteredTags = existingTags.filter(tag => 
+    tag.toLowerCase().includes(inputValue.toLowerCase()) &&
+    !form.getValues("tags").includes(tag)
+  );
 
   return (
     <Form {...form}>
@@ -129,24 +160,57 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
             <FormItem>
               <FormLabel>Tags (Optional)</FormLabel>
               <div className="flex flex-wrap items-center gap-2">
-                {field.value.length < 10 && (
-                  <Input
-                    type="text"
-                    className="w-32 flex-shrink-0"
-                    placeholder="Add tag..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const input = e.currentTarget;
-                        const value = input.value.trim();
-                        if (value && !field.value.includes(value)) {
-                          field.onChange([...field.value, value]);
-                          input.value = '';
-                        }
-                      }
-                    }}
-                  />
-                )}
+                <Popover open={tagInputOpen} onOpenChange={setTagInputOpen}>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      role="combobox" 
+                      size="sm"
+                      className="w-32 justify-between"
+                    >
+                      <Input
+                        type="text"
+                        className="w-full border-none p-0 focus:outline-none"
+                        placeholder="Add tag..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = inputValue.trim();
+                            if (value && !field.value.includes(value)) {
+                              field.onChange([...field.value, value]);
+                              setInputValue('');
+                              setTagInputOpen(false);
+                            }
+                          }
+                        }}
+                      />
+                      <PlusIcon className="h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-32 p-0">
+                    <Command>
+                      <CommandInput placeholder="Search tags..." className="h-9" />
+                      <CommandEmpty>No tags found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredTags.map((tag) => (
+                          <CommandItem
+                            key={tag}
+                            onSelect={() => {
+                              field.onChange([...field.value, tag]);
+                              setInputValue('');
+                              setTagInputOpen(false);
+                            }}
+                          >
+                            {tag}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
                 {field.value.map((tag, index) => (
                   <div
                     key={index}

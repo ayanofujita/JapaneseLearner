@@ -191,6 +191,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/tags", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const translations = await storage.getTranslations(req.user.id);
+      const uniqueTags = Array.from(
+        new Set(translations.flatMap((t) => t.tags || []))
+      );
+
+      res.json(uniqueTags);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      res.status(500).json({ message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
