@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input"; // Import Input component
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import ImageUpload from "./image-upload";
 
 export default function TranslationForm({ onTranslate }: { onTranslate: (result: any) => void }) {
   const { toast } = useToast();
@@ -17,12 +18,13 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
     defaultValues: {
       text: "",
       tone: "casual" as const,
-      title: "" // Add default value for title
+      title: "",
+      images: []
     }
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string }) => { // Added title to data
+    mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string; images?: string[] }) => {
       const res = await apiRequest("POST", "/api/translate", data);
       return res.json();
     },
@@ -63,6 +65,23 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                 <Input
                   placeholder="Enter a title or leave blank for AI-generated title"
                   {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="images"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Images (Optional)</FormLabel>
+              <FormControl>
+                <ImageUpload
+                  images={field.value || []}
+                  onImagesChange={(images) => field.onChange(images)}
+                  maxImages={4}
                 />
               </FormControl>
             </FormItem>
