@@ -1,13 +1,23 @@
+
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import DictionaryPopup from "./dictionary-popup";
 
-export default function JapaneseText({ text }: { text: string }) {
+export default function JapaneseText({ 
+  text,
+  englishText 
+}: { 
+  text: string;
+  englishText?: string;
+}) {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   const [showFurigana, setShowFurigana] = useState(true);
+  const [showEnglishText, setShowEnglishText] = useState(true);
   const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -33,45 +43,71 @@ export default function JapaneseText({ text }: { text: string }) {
       );
       const popupY = rect.top + rect.height + 5; // Position just below the word
 
-      // Add highlight to the word
+      // Add highlight class to the current selected word
       wordElement.classList.add("bg-primary/10");
-      setSelectedElement(wordElement);
+      setSelectedElement(wordElement as HTMLElement);
 
-      // Get the full word text by removing all rt content
-      const rtElements = wordElement.querySelectorAll('rt');
-      let fullWord = wordElement.textContent || '';
-      rtElements.forEach(rt => {
-        fullWord = fullWord.replace(rt.textContent || '', '');
-      });
-
-      setSelectedWord(fullWord.trim());
+      // Set the word and position
+      setSelectedWord(wordElement.textContent || "");
       setPopupPosition({ x: popupX, y: popupY });
     }
   };
 
-  return (
-    <Card className="p-6 relative" ref={containerRef}>
-      <div className="flex items-center justify-end space-x-2 mb-4">
-        <Switch
-          id="furigana-mode"
-          checked={showFurigana}
-          onCheckedChange={setShowFurigana}
-        />
-        <Label htmlFor="furigana-mode">Show Furigana</Label>
-      </div>
+  const toggleFurigana = () => {
+    setShowFurigana(!showFurigana);
+  };
 
-      <div
-        className={`
-          text-lg leading-relaxed break-words
-          ${!showFurigana ? '[&_rt]:hidden [&_rt]:absolute [&_rt]:top-0' : '[&_rt]:block'}
-          [&_ruby]:inline-flex [&_ruby]:flex-col [&_ruby]:items-center [&_ruby]:justify-center
-          [&_ruby]:relative [&_ruby]:leading-normal
-          [&_.jp-word]:hover:cursor-pointer [&_.jp-word]:rounded
-          [&_.jp-word]:transition-colors
-        `}
-        onClick={handleWordClick}
-        dangerouslySetInnerHTML={{ __html: text }}
-      />
+  const toggleEnglishText = () => {
+    setShowEnglishText(!showEnglishText);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="furigana-toggle"
+              checked={showFurigana}
+              onCheckedChange={toggleFurigana}
+            />
+            <Label htmlFor="furigana-toggle">Show Furigana</Label>
+          </div>
+          {englishText && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleEnglishText}
+              title={showEnglishText ? "Hide English" : "Show English"}
+            >
+              {showEnglishText ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+              <span className="ml-2">{showEnglishText ? "Hide" : "Show"} English</span>
+            </Button>
+          )}
+        </div>
+        
+        <div ref={containerRef} className="space-y-4">
+          {/* Japanese text with furigana */}
+          <div 
+            className={`text-lg ${showFurigana ? "" : "rt-hidden"}`} 
+            onClick={handleWordClick}
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+          
+          {/* English translation (conditionally shown) */}
+          {englishText && (
+            <div className={`mt-4 text-muted-foreground ${showEnglishText ? "" : "hidden"}`}>
+              {englishText}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <style jsx>{`
+        .rt-hidden rt {
+          display: none;
+        }
+      `}</style>
 
       {selectedWord && popupPosition && (
         <DictionaryPopup
@@ -79,7 +115,6 @@ export default function JapaneseText({ text }: { text: string }) {
           position={popupPosition}
           onClose={() => {
             setSelectedWord(null);
-            setPopupPosition(null);
             if (selectedElement) {
               selectedElement.classList.remove("bg-primary/10");
               setSelectedElement(null);
@@ -87,6 +122,6 @@ export default function JapaneseText({ text }: { text: string }) {
           }}
         />
       )}
-    </Card>
+    </div>
   );
 }

@@ -35,7 +35,10 @@ export default function Home() {
               <h2 className="font-medium text-lg">
                 {currentTranslation.title || "Translation"}
               </h2>
-              <JapaneseText text={currentTranslation.japaneseText} />
+              <JapaneseText 
+                text={currentTranslation.japaneseText} 
+                englishText={currentTranslation.englishText}
+              />
             </>
           )}
         </div>

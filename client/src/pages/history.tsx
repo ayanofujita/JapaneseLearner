@@ -108,12 +108,11 @@ export default function History() {
               </div>
               <div className="space-y-4">
                 <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm font-medium mb-1">English</p>
-                  <p>{translation.englishText}</p>
-                </div>
-                <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm font-medium mb-1">Japanese</p>
-                  <JapaneseText text={translation.japaneseText} />
+                  <p className="text-sm font-medium mb-1">Translation</p>
+                  <JapaneseText 
+                    text={translation.japaneseText} 
+                    englishText={translation.englishText} 
+                  />
                 </div>
               </div>
             </Card>
