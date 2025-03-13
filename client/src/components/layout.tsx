@@ -2,9 +2,10 @@ import { Link, useLocation, useNavigate } from "wouter";
 import { MoonIcon, SunIcon, LogInIcon, LogOutIcon, MenuIcon, XIcon as CloseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
-import { useAuth } from "@/hooks/use-auth";
-import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/use-auth";
+import "@/components/mobile-layout.css";
+import { useState, useRef, useEffect } from "react";
 
 // New History component
 function HistoryPage() {
