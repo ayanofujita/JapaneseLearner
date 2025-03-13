@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -7,18 +6,36 @@ import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import DictionaryPopup from "./dictionary-popup";
 
-export default function JapaneseText({ 
+// Helper function to get text content without furigana readings
+function getTextExcludingRt(element: HTMLElement): string {
+  // Clone the node to avoid modifying the original DOM
+  const clone = element.cloneNode(true) as HTMLElement;
+
+  // Remove all rt elements from the clone
+  const rtElements = clone.querySelectorAll("rt");
+  rtElements.forEach((rt) => rt.remove());
+
+  // Return the text content of the cleaned clone
+  return clone.textContent || "";
+}
+
+export default function JapaneseText({
   text,
-  englishText 
-}: { 
+  englishText,
+}: {
   text: string;
   englishText?: string;
 }) {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
-  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
+  const [popupPosition, setPopupPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [showFurigana, setShowFurigana] = useState(true);
   const [showEnglishText, setShowEnglishText] = useState(true);
-  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleWordClick = (event: React.MouseEvent) => {
@@ -30,7 +47,7 @@ export default function JapaneseText({
     }
 
     // Find the word container (jp-word span)
-    const wordElement = target.closest('.jp-word');
+    const wordElement = target.closest(".jp-word");
     if (wordElement) {
       // Get the bounding rectangle of the clicked element
       const rect = wordElement.getBoundingClientRect();
@@ -39,7 +56,7 @@ export default function JapaneseText({
       // Calculate popup position - now closer to the word
       const popupX = Math.min(
         rect.left,
-        (containerRect?.right || window.innerWidth) - 300 // Ensure popup doesn't overflow container
+        (containerRect?.right || window.innerWidth) - 300, // Ensure popup doesn't overflow container
       );
       const popupY = rect.top + rect.height + 5; // Position just below the word
 
@@ -47,8 +64,8 @@ export default function JapaneseText({
       wordElement.classList.add("bg-primary/10");
       setSelectedElement(wordElement as HTMLElement);
 
-      // Set the word and position
-      setSelectedWord(wordElement.textContent || "");
+      // Set the word and position - now excluding rt content
+      setSelectedWord(getTextExcludingRt(wordElement as HTMLElement));
       setPopupPosition({ x: popupX, y: popupY });
     }
   };
@@ -80,23 +97,31 @@ export default function JapaneseText({
               onClick={toggleEnglishText}
               title={showEnglishText ? "Hide English" : "Show English"}
             >
-              {showEnglishText ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-              <span className="ml-2">{showEnglishText ? "Hide" : "Show"} English</span>
+              {showEnglishText ? (
+                <EyeOffIcon size={16} />
+              ) : (
+                <EyeIcon size={16} />
+              )}
+              <span className="ml-2">
+                {showEnglishText ? "Hide" : "Show"} English
+              </span>
             </Button>
           )}
         </div>
-        
+
         <div ref={containerRef} className="space-y-4">
           {/* Japanese text with furigana */}
-          <div 
-            className={`text-lg ${showFurigana ? "" : "rt-hidden"}`} 
+          <div
+            className={`text-lg ${showFurigana ? "" : "rt-hidden"}`}
             onClick={handleWordClick}
             dangerouslySetInnerHTML={{ __html: text }}
           />
-          
+
           {/* English translation (conditionally shown) */}
           {englishText && (
-            <div className={`mt-4 text-muted-foreground ${showEnglishText ? "" : "hidden"}`}>
+            <div
+              className={`mt-4 text-muted-foreground ${showEnglishText ? "" : "hidden"}`}
+            >
               {englishText}
             </div>
           )}
@@ -106,6 +131,17 @@ export default function JapaneseText({
       <style jsx>{`
         .rt-hidden rt {
           display: none;
+        }
+
+        /* Hover styles for Japanese words */
+        :global(.jp-word) {
+          cursor: pointer;
+          border-radius: 2px;
+          transition: background-color 0.15s ease;
+        }
+
+        :global(.jp-word:hover) {
+          background-color: rgba(var(--primary-rgb), 0.08);
         }
       `}</style>
 
