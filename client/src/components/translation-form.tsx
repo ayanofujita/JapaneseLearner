@@ -76,6 +76,14 @@ export default function TranslationForm({
     },
     onSuccess: (data) => {
       onTranslate(data);
+      // Reset the form after successful translation
+      form.reset({
+        text: "",
+        tone: "casual",
+        title: "",
+        images: [],
+        tags: [],
+      });
       toast({
         title: "Translation complete",
         description: "Your text has been translated successfully.",
