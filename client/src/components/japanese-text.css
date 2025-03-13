@@ -5,9 +5,9 @@
 
 /* Improved spacing for furigana */
 rt {
-  margin-bottom: 0.75em;
+  margin-bottom: 0.5em;
   font-size: 0.65em;
-  line-height: 1.8;
+  line-height: 1.5;
   color: var(--muted-foreground);
 }
 
@@ -16,7 +16,7 @@ ruby {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: 1.8;
+  line-height: 1.5;
   margin: 0 0.1em;
 }
 
@@ -25,16 +25,20 @@ ruby {
   cursor: pointer;
   padding: 0 0.1em;
   border-radius: 0.2em;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .jp-word:hover {
-  background-color: var(--primary-foreground/10);
+  background-color: var(--primary/10);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Improved text container spacing */
 .japanese-text-container {
   font-size: 1.2em;
-  line-height: 2.5;
-  letter-spacing: 0.02em;
+  line-height: 2;
+  letter-spacing: 0.01em;
+  padding: 0.5em 0;
 }
