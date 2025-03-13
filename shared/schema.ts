@@ -17,7 +17,8 @@ export const translations = pgTable("translations", {
   japaneseText: text("japanese_text").notNull(),
   tone: text("tone").notNull(), // 'casual' | 'formal'
   createdAt: timestamp("created_at").defaultNow(),
-  images: text("images").array(), // Store array of image URLs
+  images: text("images").array(),
+  tags: text("tags").array(), // Add tags array column
 });
 
 export const savedWords = pgTable("saved_words", {
@@ -42,6 +43,7 @@ export const insertTranslationSchema = createInsertSchema(translations).pick({
   tone: true,
 }).extend({
   images: z.array(z.string()).max(4).optional(),
+  tags: z.array(z.string()).max(10).optional(), // Add tags to schema
 });
 
 export const insertSavedWordSchema = createInsertSchema(savedWords).pick({
@@ -63,6 +65,7 @@ export const translateRequestSchema = z.object({
   tone: z.enum(['casual', 'formal']),
   title: z.string().optional(),
   images: z.array(z.string()).max(4).optional(),
+  tags: z.array(z.string()).max(10).optional(), // Add tags to request schema
 });
 
 export type TranslateRequest = z.infer<typeof translateRequestSchema>;

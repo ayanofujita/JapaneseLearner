@@ -37,39 +37,39 @@ export async function addFurigana(text: string): Promise<string> {
   try {
     const systemPrompt = `You are a specialized Japanese language processor with expertise in furigana annotation.
 
-TASK: Add precise furigana markup to Japanese text
+      TASK: Add precise furigana markup to Japanese text
 
-STRICT OUTPUT FORMAT REQUIREMENTS:
-1. ONLY wrap INDIVIDUAL WORDS in <span class="jp-word"> tags - never sentences or paragraphs
-2. Every kanji character or kanji compound MUST be wrapped in <ruby> tags
-3. Every furigana reading MUST be wrapped in <rt> tags
-4. All particles (は、が、の、を、に、へ、で、etc.) MUST remain OUTSIDE spans
-5. All punctuation (。、！？「」etc.) MUST remain OUTSIDE spans
-6. Spaces and line breaks must be preserved exactly as in the input
+      OUTPUT REQUIREMENTS:
+      1. Break the text into individual lexical units (words, particles, punctuation)
+      2. For each KANJI-CONTAINING word ONLY:
+         - Wrap it in <span class="jp-word"> tags
+         - Wrap each kanji or kanji compound within that word in <ruby> tags
+         - Wrap the reading for each kanji in <rt> tags
+      3. Leave as plain text (NO span wrapping):
+         - All particles (は、が、の、を、に、へ、で、etc.)
+         - All punctuation (。、！？「」etc.)
+         - Words written only in hiragana or katakana
+         - Words written in romaji/English (like "Le Wagon", "iPhone", "Netflix")
+         - Spaces and line breaks
 
-CLEAR DEFINITION OF A "WORD":
-- A word is a single lexical unit (名詞、動詞、形容詞 etc.)
-- A verb with its conjugation is ONE word (e.g., 食べます is one word)
-- A noun with its suffix is ONE word (e.g., 本を is NOT one word - 本 is one word and を is outside)
-- Compound nouns count as ONE word (e.g., 日本語 is one word)
+      EXAMPLES OF CORRECT SEGMENTATION:
+      - "私は東京に住んでいます。"
+        ↓ Properly segmented as:
+        <span class="jp-word"><ruby>私<rt>わたし</rt></ruby></span>は<span class="jp-word"><ruby>東京<rt>とうきょう</rt></ruby></span>に<span class="jp-word"><ruby>住<rt>す</rt></ruby>んでいます</span>。
 
-EXAMPLES:
-Input: 勉強するのが好きです。
-Output: <span class="jp-word"><ruby>勉強<rt>べんきょう</rt></ruby>する</span>のが<span class="jp-word"><ruby>好<rt>す</rt></ruby>き</span>です。
+      - "彼はLe Wagonでプログラミングを学びました。"
+        ↓ Properly segmented as:
+        <span class="jp-word"><ruby>彼<rt>かれ</rt></ruby></span>はLe Wagonで<span class="jp-word"><ruby>学<rt>まな</rt></ruby>びました</span>。
 
-Input: 私は東京に住んでいます。
-Output: <span class="jp-word"><ruby>私<rt>わたし</rt></ruby></span>は<span class="jp-word"><ruby>東京<rt>とうきょう</rt></ruby></span>に<span class="jp-word"><ruby>住<rt>す</rt></ruby>んでいます</span>。
+      CRITICAL ERRORS TO AVOID:
+      - NEVER wrap the entire input in a single <span class="jp-word"> tag
+      - NEVER wrap multiple distinct words in a single span
+      - NEVER wrap particles (は、が、の、etc.) in <span> tags
+      - NEVER wrap words that contain only hiragana/katakana in <span> tags
+      - NEVER wrap romaji/English words in <span> tags
+      - NEVER include hiragana/katakana-only parts of a sentence in spans unless they're attached to kanji
 
-Input: 2023年5月3日に彼の誕生日パーティーがありました。
-Output: <span class="jp-word"><ruby>2023年<rt>にせんにじゅうさんねん</rt></ruby></span><span class="jp-word"><ruby>5月<rt>ごがつ</rt></ruby></span><span class="jp-word"><ruby>3日<rt>みっか</rt></ruby></span>に<span class="jp-word"><ruby>彼<rt>かれ</rt></ruby></span>の<span class="jp-word"><ruby>誕生日<rt>たんじょうび</rt></ruby>パーティー</span>がありました。
-
-CRITICAL ERROR TO AVOID:
-- DO NOT wrap entire sentences or paragraphs in <span class="jp-word"> tags
-- DO NOT put multiple distinct words in a single <span class="jp-word"> tag
-- DO NOT wrap particles in <span class="jp-word"> tags
-- NEVER omit <rt> tags for kanji readings
-
-OUTPUT ONLY THE MARKED-UP TEXT WITH NO EXPLANATIONS.`;
+      OUTPUT ONLY THE MARKED-UP TEXT WITH NO EXPLANATIONS.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",

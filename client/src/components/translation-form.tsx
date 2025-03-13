@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "./image-upload";
+import { PlusIcon, XIcon } from "lucide-react";
 
 export default function TranslationForm({ onTranslate }: { onTranslate: (result: any) => void }) {
   const { toast } = useToast();
@@ -19,12 +20,13 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
       text: "",
       tone: "casual" as const,
       title: "",
-      images: []
+      images: [],
+      tags: [] as string[]
     }
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string; images?: string[] }) => {
+    mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string; images?: string[]; tags?: string[] }) => {
       try {
         const res = await apiRequest("POST", "/api/translate", data);
         if (!res.ok) {
@@ -116,6 +118,55 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                   maxImages={4}
                 />
               </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags (Optional)</FormLabel>
+              <div className="flex flex-wrap gap-2">
+                {field.value.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-full"
+                  >
+                    <span className="text-sm">{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTags = [...field.value];
+                        newTags.splice(index, 1);
+                        field.onChange(newTags);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <XIcon className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {field.value.length < 10 && (
+                  <Input
+                    type="text"
+                    className="w-32"
+                    placeholder="Add tag..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const input = e.currentTarget;
+                        const value = input.value.trim();
+                        if (value && !field.value.includes(value)) {
+                          field.onChange([...field.value, value]);
+                          input.value = '';
+                        }
+                      }
+                    }}
+                  />
+                )}
+              </div>
             </FormItem>
           )}
         />

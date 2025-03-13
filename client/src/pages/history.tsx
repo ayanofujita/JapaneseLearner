@@ -7,21 +7,34 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Translation } from "@shared/schema";
 import { Link } from "wouter";
-import ImagePreview from "@/components/image-preview"; // Added import
+import ImagePreview from "@/components/image-preview";
 
 export default function History() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const { data: translations = [], isLoading } = useQuery<Translation[]>({
     queryKey: ["/api/translations"],
     select: (data) => {
       // Sort translations by most recent first
-      return [...data].sort((a, b) => {
+      let filteredData = [...data].sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
+
+      // Filter by selected tags if any are selected
+      if (selectedTags.length > 0) {
+        filteredData = filteredData.filter((translation) =>
+          selectedTags.every((tag) => translation.tags?.includes(tag))
+        );
+      }
+
+      return filteredData;
     },
   });
+
+  // Get unique tags from all translations
+  const allTags = [...new Set(translations.flatMap((t) => t.tags || []))];
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -50,6 +63,14 @@ export default function History() {
     }
   };
 
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag)
+        ? prev.filter((t) => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-8">
       <div className="flex justify-between items-center">
@@ -59,10 +80,27 @@ export default function History() {
             Your previous Japanese translations
           </p>
         </div>
-        {/* <Link to="/">
-          <Button variant="outline">Back to Translator</Button>
-        </Link> */}
       </div>
+
+      {/* Tag filters */}
+      {allTags.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium">Filter by tags:</h2>
+          <div className="flex flex-wrap gap-2">
+            {allTags.map((tag) => (
+              <Button
+                key={tag}
+                variant={selectedTags.includes(tag) ? "default" : "outline"}
+                size="sm"
+                onClick={() => toggleTag(tag)}
+                className="rounded-full"
+              >
+                {tag}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-center py-8">Loading translations...</div>
@@ -82,12 +120,26 @@ export default function History() {
                   <h3 className="font-semibold text-lg">
                     {translation.title || "Untitled"}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(translation.createdAt!).toLocaleDateString()}{" "}
-                    {new Date(translation.createdAt!).toLocaleTimeString()}
-                    {" · "}
-                    {translation.tone} tone
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(translation.createdAt).toLocaleDateString()}{" "}
+                      {new Date(translation.createdAt).toLocaleTimeString()}
+                      {" · "}
+                      {translation.tone} tone
+                    </p>
+                    {translation.tags && translation.tags.length > 0 && (
+                      <div className="flex gap-1">
+                        {translation.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-0.5 text-xs bg-primary/10 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <Button
                   variant="ghost"
@@ -123,7 +175,7 @@ export default function History() {
                 </div>
 
                 {translation.images && translation.images.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-3"> {/* Changed to grid-cols-4 */}
+                  <div className="grid grid-cols-4 gap-2 mt-3">
                     {translation.images.map((image, index) => (
                       <ImagePreview key={index} src={image} index={index} />
                     ))}
