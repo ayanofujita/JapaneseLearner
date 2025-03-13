@@ -87,6 +87,24 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
 
         <FormField
           control={form.control}
+          name="text"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Text to Translate</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Enter English text to translate to Japanese..."
+                  {...field}
+                  rows={8}
+                  className="min-h-[200px]"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="images"
           render={({ field }) => (
             <FormItem>
@@ -96,23 +114,6 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                   images={field.value || []}
                   onImagesChange={(images) => field.onChange(images)}
                   maxImages={4}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="text"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Text to Translate</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Enter English text to translate to Japanese..."
-                  {...field}
-                  rows={5}
                 />
               </FormControl>
             </FormItem>
