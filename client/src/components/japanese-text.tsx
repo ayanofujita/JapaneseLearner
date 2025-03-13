@@ -132,17 +132,6 @@ export default function JapaneseText({
         .rt-hidden rt {
           display: none;
         }
-
-        /* Hover styles for Japanese words */
-        :global(.jp-word) {
-          cursor: pointer;
-          border-radius: 2px;
-          transition: background-color 0.15s ease;
-        }
-
-        :global(.jp-word:hover) {
-          background-color: rgba(var(--primary-rgb), 0.08);
-        }
       `}</style>
 
       {selectedWord && popupPosition && (
