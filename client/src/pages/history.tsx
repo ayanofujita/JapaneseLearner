@@ -113,6 +113,19 @@ export default function History() {
                 </Button>
               </div>
               <div className="space-y-4">
+                {translation.images && translation.images.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    {translation.images.map((image, index) => (
+                      <div key={index} className="aspect-square">
+                        <img
+                          src={image}
+                          alt={`Image ${index + 1}`}
+                          className="h-full w-full rounded-lg object-cover border border-muted"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="bg-muted p-3 rounded-md">
                   <p className="text-sm font-medium mb-1">Translation</p>
                   <JapaneseText 

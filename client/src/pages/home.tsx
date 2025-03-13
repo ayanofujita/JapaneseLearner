@@ -29,17 +29,33 @@ export default function Home() {
           <TranslationForm onTranslate={setCurrentTranslation} />
         </div>
 
-        <div className="space-y-4">
+        <div>
           {currentTranslation && (
-            <>
-              <h2 className="font-medium text-lg">
-                {currentTranslation.title || "Translation"}
-              </h2>
-              <JapaneseText 
-                text={currentTranslation.japaneseText} 
-                englishText={currentTranslation.englishText}
-              />
-            </>
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold">{currentTranslation.title}</h2>
+
+              {/* Show images if they exist */}
+              {currentTranslation.images && currentTranslation.images.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {currentTranslation.images.map((image, index) => (
+                    <div key={index} className="aspect-square">
+                      <img
+                        src={image}
+                        alt={`Image ${index + 1}`}
+                        className="h-full w-full rounded-lg object-cover border border-muted"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="bg-muted p-6 rounded-lg">
+                <JapaneseText
+                  text={currentTranslation.japaneseText}
+                  englishText={currentTranslation.englishText}
+                />
+              </div>
+            </div>
           )}
         </div>
       </div>
