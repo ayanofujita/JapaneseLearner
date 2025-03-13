@@ -5,6 +5,35 @@ import JapaneseText from "@/components/japanese-text";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Translation } from "@shared/schema";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogTitle } from "@/components/ui/dialog"; // Import Dialog component
+
+
+function ImagePreview({ src, index }: { src: string; index: number }) {
+  const [isEnlarged, setIsEnlarged] = useState(false);
+
+  return (
+    <>
+      <img
+        src={src}
+        alt={`Image ${index + 1}`}
+        className="h-24 w-24 rounded-lg object-cover border border-muted cursor-pointer" // Reduced size
+        onClick={() => setIsEnlarged(true)}
+      />
+      <Dialog open={isEnlarged} onOpenChange={setIsEnlarged}>
+        <DialogHeader>
+          <DialogTitle>Image {index + 1}</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <img src={src} alt={`Image ${index + 1}`} className="w-full max-h-[600px] rounded-lg object-contain" />
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="default" onClick={() => setIsEnlarged(false)}>Close</Button>
+        </DialogFooter>
+      </Dialog>
+    </>
+  );
+}
+
 
 export default function Home() {
   const [currentTranslation, setCurrentTranslation] =
@@ -43,15 +72,9 @@ export default function Home() {
 
               {/* Show images if they exist */}
               {currentTranslation.images && currentTranslation.images.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="grid grid-cols-4 gap-2 mt-4">
                   {currentTranslation.images.map((image, index) => (
-                    <div key={index} className="aspect-square">
-                      <img
-                        src={image}
-                        alt={`Image ${index + 1}`}
-                        className="h-full w-full rounded-lg object-cover border border-muted"
-                      />
-                    </div>
+                    <ImagePreview key={index} src={image} index={index} />
                   ))}
                 </div>
               )}

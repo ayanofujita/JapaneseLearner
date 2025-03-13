@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Translation } from "@shared/schema";
 import { Link } from "wouter";
+import ImagePreview from "@/components/image-preview"; // Added import
 
 export default function History() {
   const { toast } = useToast();
@@ -120,17 +121,11 @@ export default function History() {
                     englishText={translation.englishText} 
                   />
                 </div>
-                
+
                 {translation.images && translation.images.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="grid grid-cols-4 gap-2 mt-3"> {/* Changed to grid-cols-4 */}
                     {translation.images.map((image, index) => (
-                      <div key={index} className="aspect-square">
-                        <img
-                          src={image}
-                          alt={`Image ${index + 1}`}
-                          className="h-full w-full rounded-lg object-cover border border-muted"
-                        />
-                      </div>
+                      <ImagePreview key={index} src={image} index={index} />
                     ))}
                   </div>
                 )}
