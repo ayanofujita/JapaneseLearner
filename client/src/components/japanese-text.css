@@ -42,3 +42,19 @@ ruby {
   letter-spacing: 0.01em;
   padding: 0.5em 0;
 }
+
+/* Media query for mobile devices */
+@media (max-width: 640px) {
+  .japanese-text-container {
+    font-size: 1em;
+    line-height: 1.8;
+  }
+  
+  ruby {
+    margin: 0;
+  }
+  
+  rt {
+    font-size: 0.6em;
+  }
+}

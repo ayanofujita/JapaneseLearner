@@ -82,7 +82,7 @@ export default function JapaneseText({
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
           <div className="flex items-center space-x-2">
             <Switch
               id="furigana-toggle"
@@ -97,13 +97,14 @@ export default function JapaneseText({
               size="sm"
               onClick={toggleEnglishText}
               title={showEnglishText ? "Hide English" : "Show English"}
+              className="whitespace-nowrap"
             >
               {showEnglishText ? (
                 <EyeOffIcon size={16} />
               ) : (
                 <EyeIcon size={16} />
               )}
-              <span className="ml-2">
+              <span className="ml-2 hidden sm:inline">
                 {showEnglishText ? "Hide" : "Show"} English
               </span>
             </Button>
