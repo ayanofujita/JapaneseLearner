@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 import { setupAuth } from "./auth";
 import { searchWord } from "./jisho";
 import { getKanjiDetails } from "./kanji";
+import { getKanjiStrokes } from "./kanji-strokes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes and middleware
@@ -18,7 +19,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const { text, tone, title, images, tags } = translateRequestSchema.parse(req.body);
+      const { text, tone, title, images, tags } = translateRequestSchema.parse(
+        req.body,
+      );
 
       const japaneseText = await translateText(text, tone);
       const withFurigana = await addFurigana(japaneseText);
@@ -105,7 +108,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const word = insertSavedWordSchema.parse(req.body);
 
       // Check if this is a new word by comparing the return value with the input
-      const existingWordCount = await storage.getWordCount(req.user.id, word.word);
+      const existingWordCount = await storage.getWordCount(
+        req.user.id,
+        word.word,
+      );
       const savedWord = await storage.saveWord({
         ...word,
         userId: req.user.id,
@@ -191,6 +197,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/kanji-strokes/:code", async (req, res) => {
+    try {
+      await getKanjiStrokes(req, res);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      res.status(500).json({ message });
+    }
+  });
+
   app.get("/api/tags", async (req, res) => {
     try {
       if (!req.user) {
@@ -199,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const translations = await storage.getTranslations(req.user.id);
       const uniqueTags = Array.from(
-        new Set(translations.flatMap((t) => t.tags || []))
+        new Set(translations.flatMap((t) => t.tags || [])),
       );
 
       res.json(uniqueTags);

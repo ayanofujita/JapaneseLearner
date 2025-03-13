@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import KanjiStrokeAnimation from "@/components/kanji-stroke-animation"; // Import the animation component
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,19 +42,25 @@ interface KanjiDetails {
 }
 
 function extractKanji(text: string): string[] {
-  return Array.from(text).filter(char => {
+  return Array.from(text).filter((char) => {
     const code = char.charCodeAt(0);
-    return (code >= 0x4E00 && code <= 0x9FFF);
+    return code >= 0x4e00 && code <= 0x9fff;
   });
 }
 
-export default function DictionaryPopup({ word, position, onClose }: DictionaryPopupProps) {
+export default function DictionaryPopup({
+  word,
+  position,
+  onClose,
+}: DictionaryPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isKanjiOpen, setIsKanjiOpen] = useState(false);
   const [isExamplesOpen, setIsExamplesOpen] = useState(false);
-  const [selectedKanji, setSelectedKanji] = useState<string[]>(extractKanji(word));
+  const [selectedKanji, setSelectedKanji] = useState<string[]>(
+    extractKanji(word),
+  );
 
   const { data: wordData, isLoading } = useQuery<WordData | null>({
     queryKey: ["/api/dictionary", word],
@@ -69,12 +76,14 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
         reading: entry.japanese[0]?.reading || "",
         meaning: entry.senses[0]?.english_definitions.join("; ") || "",
         partsOfSpeech: entry.senses[0]?.parts_of_speech || [],
-        examples: entry.senses[0]?.examples || []
+        examples: entry.senses[0]?.examples || [],
       };
-    }
+    },
   });
 
-  const { data: kanjiDetails, isLoading: isLoadingKanji } = useQuery<Record<string, KanjiDetails>>({
+  const { data: kanjiDetails, isLoading: isLoadingKanji } = useQuery<
+    Record<string, KanjiDetails>
+  >({
     queryKey: ["/api/kanji", selectedKanji],
     queryFn: async () => {
       const details: Record<string, KanjiDetails> = {};
@@ -84,15 +93,19 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
           if (res.ok) {
             details[kanji] = await res.json();
           }
-        })
+        }),
       );
       return details;
     },
-    enabled: selectedKanji.length > 0 && isKanjiOpen
+    enabled: selectedKanji.length > 0 && isKanjiOpen,
   });
 
   const { mutate: saveWord } = useMutation({
-    mutationFn: async (data: { word: string; reading: string; meaning: string }) => {
+    mutationFn: async (data: {
+      word: string;
+      reading: string;
+      meaning: string;
+    }) => {
       const res = await apiRequest("POST", "/api/words", data);
       if (!res.ok) {
         const error = await res.json();
@@ -104,12 +117,12 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
       if (data.message === "Word already saved") {
         toast({
           title: "Word already saved",
-          description: "This word is already in your study list"
+          description: "This word is already in your study list",
         });
       } else {
         toast({
           title: "Word saved",
-          description: "Word has been added to your study list"
+          description: "Word has been added to your study list",
         });
       }
     },
@@ -117,14 +130,17 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
       toast({
         title: "Error",
         description: error.message || "Failed to save word",
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     }
@@ -143,7 +159,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
         width: "90%" as const,
         maxWidth: "400px",
         maxHeight: "80vh",
-        overflowY: "auto" as const
+        overflowY: "auto" as const,
       }
     : {
         position: "fixed" as const,
@@ -152,11 +168,15 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
         zIndex: 50,
         width: 300,
         maxHeight: 400,
-        overflowY: "auto" as const
+        overflowY: "auto" as const,
       };
 
   return (
-    <Card ref={popupRef} style={popupStyle} className={`p-4 ${isMobile ? 'shadow-lg' : ''}`}>
+    <Card
+      ref={popupRef}
+      style={popupStyle}
+      className={`p-4 ${isMobile ? "shadow-lg" : ""}`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1 mr-2">
           <h3 className="text-lg font-bold break-all">{word}</h3>
@@ -164,14 +184,21 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
             <p className="text-sm text-muted-foreground">{wordData.reading}</p>
           )}
         </div>
-        <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0"
+          onClick={onClose}
+        >
           <XIcon className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="space-y-3">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading dictionary data...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading dictionary data...
+          </p>
         ) : wordData ? (
           <>
             {wordData.partsOfSpeech.length > 0 && (
@@ -190,31 +217,51 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
                     className="w-full flex justify-between items-center"
                   >
                     <span>Kanji Details</span>
-                    <ChevronDownIcon className={`h-4 w-4 transition-transform ${isKanjiOpen ? 'transform rotate-180' : ''}`} />
+                    <ChevronDownIcon
+                      className={`h-4 w-4 transition-transform ${isKanjiOpen ? "transform rotate-180" : ""}`}
+                    />
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="p-2 space-y-4">
                   {isLoadingKanji ? (
                     <p className="text-sm">Loading kanji details...</p>
                   ) : kanjiDetails ? (
-                    selectedKanji.map(kanji => {
+                    selectedKanji.map((kanji) => {
                       const details = kanjiDetails[kanji];
                       if (!details) return null;
 
                       return (
-                        <div key={kanji} className="border rounded p-2 space-y-2">
+                        <div
+                          key={kanji}
+                          className="border rounded p-2 space-y-2"
+                        >
                           <div className="flex justify-between items-start">
                             <span className="text-2xl font-bold">{kanji}</span>
                             <div className="text-xs text-muted-foreground">
                               <div>Strokes: {details.stroke_count}</div>
-                              {details.grade && <div>Grade: {details.grade}</div>}
+                              {details.grade && (
+                                <div>Grade: {details.grade}</div>
+                              )}
                               {details.jlpt && <div>JLPT N{details.jlpt}</div>}
                             </div>
                           </div>
 
+                          {/* Kanji Stroke Animation */}
+                          <div className="flex justify-center py-2">
+                            <KanjiStrokeAnimation
+                              kanji={kanji}
+                              size={100}
+                              strokeColor="currentColor"
+                              strokeWidth={2.5}
+                              animationDuration={1.2}
+                            />
+                          </div>
+
                           <div className="space-y-1">
                             <p className="text-sm font-medium">Meanings:</p>
-                            <p className="text-sm">{details.meanings.join(", ")}</p>
+                            <p className="text-sm">
+                              {details.meanings.join(", ")}
+                            </p>
                           </div>
 
                           <div className="space-y-1">
@@ -241,7 +288,10 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
             )}
 
             {wordData.examples.length > 0 && (
-              <Collapsible open={isExamplesOpen} onOpenChange={setIsExamplesOpen}>
+              <Collapsible
+                open={isExamplesOpen}
+                onOpenChange={setIsExamplesOpen}
+              >
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
@@ -249,7 +299,9 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
                     className="w-full flex justify-between items-center"
                   >
                     <span>Example Sentences</span>
-                    <ChevronDownIcon className={`h-4 w-4 transition-transform ${isExamplesOpen ? 'transform rotate-180' : ''}`} />
+                    <ChevronDownIcon
+                      className={`h-4 w-4 transition-transform ${isExamplesOpen ? "transform rotate-180" : ""}`}
+                    />
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="p-2 space-y-2">
@@ -272,7 +324,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
                   saveWord({
                     word,
                     reading: wordData.reading,
-                    meaning: wordData.meaning
+                    meaning: wordData.meaning,
                   });
                 }
               }}
@@ -282,7 +334,9 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
             </Button>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">No dictionary data found</p>
+          <p className="text-sm text-muted-foreground">
+            No dictionary data found
+          </p>
         )}
       </div>
     </Card>
