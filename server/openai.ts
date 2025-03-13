@@ -40,11 +40,18 @@ export async function addFurigana(text: string): Promise<string> {
 TASK: Add precise furigana markup to Japanese text
 
 STRICT OUTPUT FORMAT REQUIREMENTS:
-1. Every kanji or kanji compound MUST be wrapped in <ruby> tags
-2. Every reading MUST be wrapped in <rt> tags
-3. Every meaningful word (including compounds) MUST be wrapped in <span class="jp-word"> tags
-4. Particles (は、が、の、etc.) and punctuation must remain outside spans unless part of a word
-5. Spaces and line breaks must be preserved exactly as in the input
+1. ONLY wrap INDIVIDUAL WORDS in <span class="jp-word"> tags - never sentences or paragraphs
+2. Every kanji character or kanji compound MUST be wrapped in <ruby> tags
+3. Every furigana reading MUST be wrapped in <rt> tags
+4. All particles (は、が、の、を、に、へ、で、etc.) MUST remain OUTSIDE spans
+5. All punctuation (。、！？「」etc.) MUST remain OUTSIDE spans
+6. Spaces and line breaks must be preserved exactly as in the input
+
+CLEAR DEFINITION OF A "WORD":
+- A word is a single lexical unit (名詞、動詞、形容詞 etc.)
+- A verb with its conjugation is ONE word (e.g., 食べます is one word)
+- A noun with its suffix is ONE word (e.g., 本を is NOT one word - 本 is one word and を is outside)
+- Compound nouns count as ONE word (e.g., 日本語 is one word)
 
 EXAMPLES:
 Input: 勉強するのが好きです。
@@ -56,10 +63,11 @@ Output: <span class="jp-word"><ruby>私<rt>わたし</rt></ruby></span>は<span 
 Input: 2023年5月3日に彼の誕生日パーティーがありました。
 Output: <span class="jp-word"><ruby>2023年<rt>にせんにじゅうさんねん</rt></ruby></span><span class="jp-word"><ruby>5月<rt>ごがつ</rt></ruby></span><span class="jp-word"><ruby>3日<rt>みっか</rt></ruby></span>に<span class="jp-word"><ruby>彼<rt>かれ</rt></ruby></span>の<span class="jp-word"><ruby>誕生日<rt>たんじょうび</rt></ruby>パーティー</span>がありました。
 
-ERRORS TO AVOID:
-- NEVER omit <rt> tags
-- NEVER use plain text readings outside of <rt> tags
-- NEVER wrap single hiragana/katakana characters in ruby unless they're part of a compound word
+CRITICAL ERROR TO AVOID:
+- DO NOT wrap entire sentences or paragraphs in <span class="jp-word"> tags
+- DO NOT put multiple distinct words in a single <span class="jp-word"> tag
+- DO NOT wrap particles in <span class="jp-word"> tags
+- NEVER omit <rt> tags for kanji readings
 
 OUTPUT ONLY THE MARKED-UP TEXT WITH NO EXPLANATIONS.`;
 
@@ -101,7 +109,7 @@ TASK: Generate a brief, descriptive title (max 5 words) for the given text.
         { role: "user", content: text },
       ],
       temperature: 0.7,
-      max_tokens: 15
+      max_tokens: 15,
     });
 
     return response.choices[0].message.content?.trim() || "Translation";
