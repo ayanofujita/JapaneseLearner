@@ -93,6 +93,17 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
 
   const { mutate: saveWord } = useMutation({
     mutationFn: async (data: { word: string; reading: string; meaning: string }) => {
+      //Check for duplicates before saving
+      const checkRes = await fetch(`/api/words?word=${encodeURIComponent(data.word)}`);
+      if (!checkRes.ok) {
+        throw new Error("Failed to check for duplicate word");
+      }
+      const checkData = await checkRes.json();
+      if (checkData.length > 0) {
+        toast({ title: "Error", description: "Word already exists in your study list" });
+        return; //Prevent saving if duplicate
+      }
+
       const res = await apiRequest("POST", "/api/words", data);
       return res.json();
     },

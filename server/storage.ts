@@ -10,7 +10,8 @@ import {
   type InsertUser,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { sql } from 'drizzle-orm/sql';
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -34,6 +35,7 @@ export interface IStorage {
   saveWord(word: InsertSavedWord & { userId: number }): Promise<SavedWord>;
   getSavedWords(userId: number): Promise<SavedWord[]>;
   updateWordReview(id: number, nextReview: Date): Promise<SavedWord>;
+  getWordCount(userId: number, wordText: string): Promise<number>;
 
   // Session store
   sessionStore: session.Store;
@@ -92,27 +94,47 @@ export class DatabaseStorage implements IStorage {
       .where(eq(translations.id, id));
     return translation;
   }
-  
+
   async deleteTranslation(id: number): Promise<void> {
     await db.delete(translations).where(eq(translations.id, id));
   }
 
   // Saved word methods
-  async saveWord(
-    word: InsertSavedWord & { userId: number },
-  ): Promise<SavedWord> {
-    const [newWord] = await db.insert(savedWords).values(word).returning();
-    return newWord;
+  async saveWord(word: InsertSavedWord & { userId: number }): Promise<SavedWord> {
+    // Check if this word already exists for this user
+    const existingWords = await db
+      .select()
+      .from(savedWords)
+      .where(eq(savedWords.userId, word.userId))
+      .where(eq(savedWords.word, word.word));
+
+    // If the word already exists, return it instead of creating a duplicate
+    if (existingWords.length > 0) {
+      return existingWords[0];
+    }
+
+    // Otherwise insert the new word
+    const [savedWord] = await db
+      .insert(savedWords)
+      .values(word)
+      .returning();
+    return savedWord;
   }
 
   async getSavedWords(userId: number): Promise<SavedWord[]> {
-    if (userId) {
-      return await db
-        .select()
-        .from(savedWords)
-        .where(eq(savedWords.userId, userId));
-    }
-    return await db.select().from(savedWords);
+    return db.select().from(savedWords).where(eq(savedWords.userId, userId));
+  }
+
+  async getWordCount(userId: number, wordText: string): Promise<number> {
+    const result = await db
+      .select({ count: sql`count(*)` })
+      .from(savedWords)
+      .where(and(
+        eq(savedWords.userId, userId),
+        eq(savedWords.word, wordText)
+      ));
+
+    return Number(result[0]?.count || 0);
   }
 
   async updateWordReview(id: number, nextReview: Date): Promise<SavedWord> {
