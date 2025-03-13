@@ -25,8 +25,22 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string; images?: string[] }) => {
-      const res = await apiRequest("POST", "/api/translate", data);
-      return res.json();
+      try {
+        const res = await apiRequest("POST", "/api/translate", data);
+        if (!res.ok) {
+          if (res.status === 413) {
+            throw new Error("Images are too large. Please try with smaller or fewer images.");
+          }
+          const error = await res.json();
+          throw new Error(error.message || "Failed to translate text");
+        }
+        return res.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Failed to translate text");
+      }
     },
     onSuccess: (data) => {
       onTranslate(data);

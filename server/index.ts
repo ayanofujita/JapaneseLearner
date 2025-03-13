@@ -5,8 +5,8 @@ import { setupVite, serveStatic, log } from "./vite";
 const app = express();
 
 // Increase JSON and URL-encoded body parser limits to handle base64 images
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
