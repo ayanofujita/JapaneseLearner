@@ -132,6 +132,22 @@ export default function JapaneseText({
         .rt-hidden rt {
           display: none;
         }
+
+        /* Improved spacing for furigana */
+        :global(rt) {
+          margin-bottom: 0.75em;
+          font-size: 0.65em;
+          line-height: 1.8;
+        }
+
+        :global(ruby) {
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          line-height: 1.8;
+          margin: 0 0.1em;
+        }
       `}</style>
 
       {selectedWord && popupPosition && (
