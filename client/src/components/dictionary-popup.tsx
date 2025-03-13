@@ -93,24 +93,31 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
 
   const { mutate: saveWord } = useMutation({
     mutationFn: async (data: { word: string; reading: string; meaning: string }) => {
-      //Check for duplicates before saving
-      const checkRes = await fetch(`/api/words?word=${encodeURIComponent(data.word)}`);
-      if (!checkRes.ok) {
-        throw new Error("Failed to check for duplicate word");
-      }
-      const checkData = await checkRes.json();
-      if (checkData.length > 0) {
-        toast({ title: "Error", description: "Word already exists in your study list" });
-        return; //Prevent saving if duplicate
-      }
-
       const res = await apiRequest("POST", "/api/words", data);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to save word");
+      }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data.message === "Word already saved") {
+        toast({
+          title: "Word already saved",
+          description: "This word is already in your study list"
+        });
+      } else {
+        toast({
+          title: "Word saved",
+          description: "Word has been added to your study list"
+        });
+      }
+    },
+    onError: (error: Error) => {
       toast({
-        title: "Word saved",
-        description: "Word has been added to your study list"
+        title: "Error",
+        description: error.message || "Failed to save word",
+        variant: "destructive"
       });
     }
   });
@@ -261,7 +268,7 @@ export default function DictionaryPopup({ word, position, onClose }: DictionaryP
               variant="outline"
               className="w-full"
               onClick={() => {
-                if (wordData.reading && wordData.meaning) {
+                if (wordData?.reading && wordData?.meaning) {
                   saveWord({
                     word,
                     reading: wordData.reading,

@@ -103,22 +103,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const word = insertSavedWordSchema.parse(req.body);
-      
+
       // Check if this is a new word by comparing the return value with the input
       const existingWordCount = await storage.getWordCount(req.user.id, word.word);
       const savedWord = await storage.saveWord({
         ...word,
         userId: req.user.id,
       });
-      
+
       // Send appropriate message if the word was already saved
       if (existingWordCount > 0) {
-        return res.status(200).json({ 
+        return res.status(200).json({
           ...savedWord,
-          message: "Word already saved" 
+          message: "Word already saved",
         });
       }
-      
+
       res.json(savedWord);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
