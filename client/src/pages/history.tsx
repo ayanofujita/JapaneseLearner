@@ -14,6 +14,12 @@ export default function History() {
 
   const { data: translations = [], isLoading } = useQuery<Translation[]>({
     queryKey: ["/api/translations"],
+    select: (data) => {
+      // Sort translations by most recent first
+      return [...data].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    },
   });
 
   const deleteMutation = useMutation({
