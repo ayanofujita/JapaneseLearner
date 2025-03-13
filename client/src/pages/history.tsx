@@ -113,6 +113,14 @@ export default function History() {
                 </Button>
               </div>
               <div className="space-y-4">
+                <div className="bg-muted p-3 rounded-md">
+                  <p className="text-sm font-medium mb-1">Translation</p>
+                  <JapaneseText 
+                    text={translation.japaneseText} 
+                    englishText={translation.englishText} 
+                  />
+                </div>
+                
                 {translation.images && translation.images.length > 0 && (
                   <div className="grid grid-cols-2 gap-2 mt-3">
                     {translation.images.map((image, index) => (
@@ -126,13 +134,6 @@ export default function History() {
                     ))}
                   </div>
                 )}
-                <div className="bg-muted p-3 rounded-md">
-                  <p className="text-sm font-medium mb-1">Translation</p>
-                  <JapaneseText 
-                    text={translation.japaneseText} 
-                    englishText={translation.englishText} 
-                  />
-                </div>
               </div>
             </Card>
           ))}

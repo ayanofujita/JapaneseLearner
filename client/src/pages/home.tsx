@@ -34,9 +34,16 @@ export default function Home() {
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold">{currentTranslation.title}</h2>
 
+              <div className="bg-muted p-6 rounded-lg">
+                <JapaneseText
+                  text={currentTranslation.japaneseText}
+                  englishText={currentTranslation.englishText}
+                />
+              </div>
+
               {/* Show images if they exist */}
               {currentTranslation.images && currentTranslation.images.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-2 gap-3 mt-4">
                   {currentTranslation.images.map((image, index) => (
                     <div key={index} className="aspect-square">
                       <img
@@ -48,13 +55,6 @@ export default function Home() {
                   ))}
                 </div>
               )}
-
-              <div className="bg-muted p-6 rounded-lg">
-                <JapaneseText
-                  text={currentTranslation.japaneseText}
-                  englishText={currentTranslation.englishText}
-                />
-              </div>
             </div>
           )}
         </div>
