@@ -32,7 +32,7 @@ export default function JapaneseText({
     x: number;
     y: number;
   } | null>(null);
-  const [showFurigana, setShowFurigana] = useState(true);
+  const [showFurigana, setShowFurigana] = useState(false);
   const [showEnglishText, setShowEnglishText] = useState(false);
   const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(
     null,
