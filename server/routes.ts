@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { translateRequestSchema, insertTranslationSchema, insertSavedWordSchema } from "@shared/schema";
-import { translateText, addFurigana } from "./openai";
+import { translateRequestSchema, insertSavedWordSchema } from "@shared/schema";
+import { translateText, addFurigana, generateTitle } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
 import { searchWord } from "./jisho";
@@ -22,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const japaneseText = await translateText(text, tone);
       const withFurigana = await addFurigana(japaneseText);
-      
+
       // Generate title if not provided
       let translationTitle = title;
       if (!translationTitle) {
@@ -34,15 +34,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         japaneseText: withFurigana,
         tone,
         title: translationTitle,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
       res.json(translation);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
-        res.status(400).json({ message: "Invalid request data", errors: error.errors });
+        res
+          .status(400)
+          .json({ message: "Invalid request data", errors: error.errors });
       } else {
-        const message = error instanceof Error ? error.message : 'Unknown error occurred';
+        const message =
+          error instanceof Error ? error.message : "Unknown error occurred";
         res.status(400).json({ message });
       }
     }
@@ -56,7 +59,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const translations = await storage.getTranslations(req.user.id);
       res.json(translations);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
     }
   });
@@ -84,7 +88,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteTranslation(id);
       res.status(200).json({ message: "Translation deleted successfully" });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
     }
   });
@@ -98,14 +103,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const word = insertSavedWordSchema.parse(req.body);
       const savedWord = await storage.saveWord({
         ...word,
-        userId: req.user.id
+        userId: req.user.id,
       });
       res.json(savedWord);
     } catch (error: unknown) {
       if (error instanceof ZodError) {
-        res.status(400).json({ message: "Invalid word data", errors: error.errors });
+        res
+          .status(400)
+          .json({ message: "Invalid word data", errors: error.errors });
       } else {
-        const message = error instanceof Error ? error.message : 'Unknown error occurred';
+        const message =
+          error instanceof Error ? error.message : "Unknown error occurred";
         res.status(400).json({ message });
       }
     }
@@ -119,7 +127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const words = await storage.getSavedWords(req.user.id);
       res.json(words);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
     }
   });
@@ -138,7 +147,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const word = await storage.updateWordReview(id, nextReview);
       res.json(word);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(400).json({ message });
     }
   });
@@ -149,7 +159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await searchWord(word);
       res.json(data);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
     }
   });
@@ -160,7 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await getKanjiDetails(character);
       res.json(data);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error occurred';
+      const message =
+        error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
     }
   });
