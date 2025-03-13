@@ -85,9 +85,11 @@ export default function Home() {
               {/* Show images if they exist */}
               {currentTranslation.images &&
                 currentTranslation.images.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-4">
+                  <div className="flex flex-wrap mt-4">
                     {currentTranslation.images.map((image, index) => (
-                      <ImagePreview key={index} src={image} index={index} />
+                      <div key={index} className="mr-2 mb-2">
+                        <ImagePreview src={image} index={index} />
+                      </div>
                     ))}
                   </div>
                 )}

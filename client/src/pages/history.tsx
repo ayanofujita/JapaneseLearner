@@ -219,9 +219,11 @@ export default function History() {
                 </div>
 
                 {translation.images && translation.images.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-3">
+                  <div className="flex flex-wrap mt-3">
                     {translation.images.map((image, index) => (
-                      <ImagePreview key={index} src={image} index={index} />
+                      <div key={index} className="mr-2 mb-2">
+                        <ImagePreview src={image} index={index} />
+                      </div>
                     ))}
                   </div>
                 )}
