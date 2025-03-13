@@ -1,0 +1,21 @@
+
+/* Styling for Japanese text component */
+.rt-hidden rt {
+  display: none;
+}
+
+/* Improved spacing for furigana */
+rt {
+  margin-bottom: 0.75em;
+  font-size: 0.65em;
+  line-height: 1.8;
+}
+
+ruby {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.8;
+  margin: 0 0.1em;
+}
