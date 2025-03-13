@@ -2,17 +2,17 @@
 /* Mobile layout specific styles */
 @media (max-width: 768px) {
   .page-header {
-    margin-top: 1.5rem !important;
-    margin-bottom: 1.5rem !important;
-    padding-top: 0.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 1rem !important;
+    padding-top: 0 !important;
   }
   
   .page-content {
-    padding-top: 0.5rem !important;
+    padding-top: 0.25rem !important;
   }
   
   h1, h2, h3 {
-    margin-top: 0.75rem !important;
-    margin-bottom: 1rem !important;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
   }
 }
