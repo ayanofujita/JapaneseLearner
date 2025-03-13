@@ -1,10 +1,22 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useNavigate } from "wouter";
 import { MoonIcon, SunIcon, LogInIcon, LogOutIcon, MenuIcon, XIcon as CloseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// New History component
+function HistoryPage() {
+  //  Replace this with actual history fetching and display logic
+  return (
+    <div>
+      <h1>Translation History</h1>
+      <p>This page will display your translation history.</p>
+    </div>
+  );
+}
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -42,12 +54,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <span className="text-xl md:text-2xl font-bold text-primary mr-4">漢字文脈</span>
-              
+
               {!isMobile && (
                 <nav className="hidden md:flex gap-4 items-center">
                   <Link href="/">
                     <span className={location === "/" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
                       Translate
+                    </span>
+                  </Link>
+                  <Link href="/history"> {/* Added history link */}
+                    <span className={location === "/history" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
+                      History
                     </span>
                   </Link>
                   <Link href="/study">
@@ -58,7 +75,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </nav>
               )}
             </div>
-            
+
             <div className="flex items-center gap-2 md:gap-4">
               {isMobile ? (
                 <>
@@ -69,7 +86,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   >
                     {theme === "dark" ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
                   </Button>
-                  
+
                   <Button 
                     variant="ghost" 
                     size="icon"
@@ -105,7 +122,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
             </div>
           </div>
-          
+
           {/* Mobile menu */}
           {isMobile && mobileMenuOpen && (
             <div 
@@ -116,6 +133,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <Link href="/">
                   <span className={`block px-4 py-2 text-sm ${location === "/" ? "text-primary" : "text-foreground"} hover:bg-accent`}>
                     Translate
+                  </span>
+                </Link>
+                <Link href="/history"> {/* Added history link to mobile menu */}
+                  <span className={`block px-4 py-2 text-sm ${location === "/history" ? "text-primary" : "text-foreground"} hover:bg-accent`}>
+                    History
                   </span>
                 </Link>
                 <Link href="/study">
