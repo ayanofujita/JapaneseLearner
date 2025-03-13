@@ -28,13 +28,13 @@ function ImagePreview({ src, index }: { src: string; index: number }) {
         <DialogHeader>
           <DialogTitle>Image {index + 1}</DialogTitle>
         </DialogHeader>
-        <DialogBody>
+        <DialogContent>
           <img
             src={src}
             alt={`Image ${index + 1}`}
             className="w-full max-h-[600px] rounded-lg object-contain"
           />
-        </DialogBody>
+        </DialogContent>
         <DialogFooter>
           <Button variant="default" onClick={() => setIsEnlarged(false)}>
             Close

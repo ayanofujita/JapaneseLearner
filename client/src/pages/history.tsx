@@ -7,7 +7,45 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Translation } from "@shared/schema";
 import { Link } from "wouter";
-import ImagePreview from "@/components/image-preview";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+function ImagePreview({ src, index }: { src: string; index: number }) {
+  const [isEnlarged, setIsEnlarged] = useState(false);
+
+  return (
+    <>
+      <img
+        src={src}
+        alt={`Image ${index + 1}`}
+        className="h-24 w-24 rounded-lg object-cover border border-muted cursor-pointer"
+        onClick={() => setIsEnlarged(true)}
+      />
+      <Dialog open={isEnlarged} onOpenChange={setIsEnlarged}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Image {index + 1}</DialogTitle>
+          </DialogHeader>
+          <img
+            src={src}
+            alt={`Image ${index + 1}`}
+            className="w-full max-h-[600px] rounded-lg object-contain"
+          />
+          <DialogFooter>
+            <Button variant="default" onClick={() => setIsEnlarged(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export default function History() {
   const { toast } = useToast();
@@ -19,7 +57,9 @@ export default function History() {
     select: (data) => {
       // Sort translations by most recent first
       let filteredData = [...data].sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        return bDate - aDate;
       });
 
       // Filter by selected tags if any are selected
@@ -34,7 +74,7 @@ export default function History() {
   });
 
   // Get unique tags from all translations
-  const allTags = [...new Set(translations.flatMap((t) => t.tags || []))];
+  const allTags = Array.from(new Set(translations.flatMap((t) => t.tags || [])));
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -113,7 +153,7 @@ export default function History() {
         </div>
       ) : (
         <div className="space-y-6">
-          {translations.map((translation: Translation) => (
+          {translations.map((translation) => (
             <Card key={translation.id} className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -122,9 +162,13 @@ export default function History() {
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-sm text-muted-foreground">
-                      {new Date(translation.createdAt).toLocaleDateString()}{" "}
-                      {new Date(translation.createdAt).toLocaleTimeString()}
-                      {" · "}
+                      {translation.createdAt && (
+                        <>
+                          {new Date(translation.createdAt).toLocaleDateString()}{" "}
+                          {new Date(translation.createdAt).toLocaleTimeString()}
+                          {" · "}
+                        </>
+                      )}
                       {translation.tone} tone
                     </p>
                     {translation.tags && translation.tags.length > 0 && (
@@ -168,9 +212,9 @@ export default function History() {
               <div className="space-y-4">
                 <div className="bg-muted p-3 rounded-md">
                   <p className="text-sm font-medium mb-1">Translation</p>
-                  <JapaneseText 
-                    text={translation.japaneseText} 
-                    englishText={translation.englishText} 
+                  <JapaneseText
+                    text={translation.japaneseText}
+                    englishText={translation.englishText}
                   />
                 </div>
 
