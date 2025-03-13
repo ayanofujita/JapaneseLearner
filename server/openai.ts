@@ -83,3 +83,30 @@ OUTPUT ONLY THE MARKED-UP TEXT WITH NO EXPLANATIONS.`;
     throw new Error(`Failed to add furigana: ${message}`);
   }
 }
+
+export async function generateTitle(text: string): Promise<string> {
+  try {
+    const systemPrompt = `You are a concise title generator for translations.
+    
+TASK: Generate a brief, descriptive title (max 5 words) for the given text.
+- The title should reflect the main topic or theme of the text
+- Keep it short and concise, ideally 2-5 words
+- Do not use quotation marks around the title
+- Return ONLY the title with no additional text or explanations`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: text },
+      ],
+      temperature: 0.7,
+      max_tokens: 15
+    });
+
+    return response.choices[0].message.content?.trim() || "Translation";
+  } catch (error: unknown) {
+    console.error("Failed to generate title:", error);
+    return "Translation"; // Fallback title
+  }
+}

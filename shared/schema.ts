@@ -12,6 +12,7 @@ export const users = pgTable("users", {
 export const translations = pgTable("translations", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
+  title: text("title"),
   englishText: text("english_text").notNull(),
   japaneseText: text("japanese_text").notNull(),
   tone: text("tone").notNull(), // 'casual' | 'formal'
@@ -56,7 +57,8 @@ export type InsertSavedWord = z.infer<typeof insertSavedWordSchema>;
 
 export const translateRequestSchema = z.object({
   text: z.string().min(1).max(5000),
-  tone: z.enum(['casual', 'formal'])
+  tone: z.enum(['casual', 'formal']),
+  title: z.string().optional()
 });
 
 export type TranslateRequest = z.infer<typeof translateRequestSchema>;

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input"; // Import Input component
 import { useToast } from "@/hooks/use-toast";
 
 export default function TranslationForm({ onTranslate }: { onTranslate: (result: any) => void }) {
@@ -15,12 +16,13 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
     resolver: zodResolver(translateRequestSchema),
     defaultValues: {
       text: "",
-      tone: "casual" as const
+      tone: "casual" as const,
+      title: "" // Add default value for title
     }
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (data: { text: string; tone: 'casual' | 'formal' }) => {
+    mutationFn: async (data: { text: string; tone: 'casual' | 'formal'; title?: string }) => { // Added title to data
       const res = await apiRequest("POST", "/api/translate", data);
       return res.json();
     },
@@ -50,18 +52,34 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => mutate(data))} className="space-y-6">
+      <form onSubmit={form.handleSubmit((data) => mutate(data))} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter a title or leave blank for AI-generated title"
+                  {...field}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="text"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>English Text</FormLabel>
+              <FormLabel>Text to Translate</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Enter text to translate..."
-                  className="min-h-[200px]"
+                  placeholder="Enter English text to translate to Japanese..."
                   {...field}
+                  rows={5}
                 />
               </FormControl>
             </FormItem>
@@ -78,16 +96,24 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="flex space-x-4"
+                  className="flex flex-col space-y-1"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="casual" id="casual" />
-                    <label htmlFor="casual">Casual</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="formal" id="formal" />
-                    <label htmlFor="formal">Formal</label>
-                  </div>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="casual" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Casual (友達と話すように)
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="formal" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Formal (丁寧な話し方)
+                    </FormLabel>
+                  </FormItem>
                 </RadioGroup>
               </FormControl>
             </FormItem>

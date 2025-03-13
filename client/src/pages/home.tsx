@@ -72,11 +72,14 @@ export default function Home() {
             {translations.map((translation: Translation) => (
               <Card key={translation.id} className="p-4">
                 <div className="flex justify-between items-start">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {new Date(translation.createdAt!).toLocaleDateString()}
-                    {" · "}
-                    {translation.tone} tone
-                  </p>
+                  <div>
+                    <h3 className="font-medium text-md mb-1">{translation.title || "Translation"}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {new Date(translation.createdAt!).toLocaleDateString()}
+                      {" · "}
+                      {translation.tone} tone
+                    </p>
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 

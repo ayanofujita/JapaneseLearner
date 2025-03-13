@@ -18,15 +18,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const { text, tone } = translateRequestSchema.parse(req.body);
+      const { text, tone, title } = translateRequestSchema.parse(req.body);
 
       const japaneseText = await translateText(text, tone);
       const withFurigana = await addFurigana(japaneseText);
+      
+      // Generate title if not provided
+      let translationTitle = title;
+      if (!translationTitle) {
+        translationTitle = await generateTitle(text);
+      }
 
       const translation = await storage.createTranslation({
         englishText: text,
         japaneseText: withFurigana,
         tone,
+        title: translationTitle,
         userId: req.user.id
       });
 
