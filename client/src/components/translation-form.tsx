@@ -166,32 +166,20 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                       variant="outline" 
                       role="combobox" 
                       size="sm"
-                      className="w-32 justify-between"
+                      className="flex items-center gap-2"
                     >
-                      <Input
-                        type="text"
-                        className="w-full border-none p-0 focus:outline-none"
-                        placeholder="Add tag..."
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const value = inputValue.trim();
-                            if (value && !field.value.includes(value)) {
-                              field.onChange([...field.value, value]);
-                              setInputValue('');
-                              setTagInputOpen(false);
-                            }
-                          }
-                        }}
-                      />
-                      <PlusIcon className="h-4 w-4 shrink-0 opacity-50" />
+                      Add Tag
+                      <PlusIcon className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-32 p-0">
+                  <PopoverContent className="w-[200px] p-0" align="start">
                     <Command>
-                      <CommandInput placeholder="Search tags..." className="h-9" />
+                      <CommandInput 
+                        placeholder="Type a tag..." 
+                        value={inputValue}
+                        onValueChange={setInputValue}
+                        className="h-9"
+                      />
                       <CommandEmpty>
                         <button
                           className="w-full p-2 text-sm text-left hover:bg-accent cursor-pointer"
