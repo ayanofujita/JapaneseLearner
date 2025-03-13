@@ -55,13 +55,13 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
       console.error("Translation error:", error);
 
       // Check if this is an authentication error
-      const isAuthError = error instanceof Error && 
+      const isAuthError = error instanceof Error &&
         (error.message.includes("401") || error.message.toLowerCase().includes("authentication"));
 
       toast({
         variant: "destructive",
         title: isAuthError ? "Login Required" : "Translation Failed",
-        description: isAuthError 
+        description: isAuthError
           ? "Please sign up or log in to translate text."
           : (error instanceof Error ? error.message : "Failed to translate text"),
       });
@@ -128,7 +128,25 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tags (Optional)</FormLabel>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {field.value.length < 10 && (
+                  <Input
+                    type="text"
+                    className="w-32 flex-shrink-0"
+                    placeholder="Add tag..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const input = e.currentTarget;
+                        const value = input.value.trim();
+                        if (value && !field.value.includes(value)) {
+                          field.onChange([...field.value, value]);
+                          input.value = '';
+                        }
+                      }
+                    }}
+                  />
+                )}
                 {field.value.map((tag, index) => (
                   <div
                     key={index}
@@ -148,24 +166,6 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                     </button>
                   </div>
                 ))}
-                {field.value.length < 10 && (
-                  <Input
-                    type="text"
-                    className="w-32"
-                    placeholder="Add tag..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const input = e.currentTarget;
-                        const value = input.value.trim();
-                        if (value && !field.value.includes(value)) {
-                          field.onChange([...field.value, value]);
-                          input.value = '';
-                        }
-                      }
-                    }}
-                  />
-                )}
               </div>
             </FormItem>
           )}
