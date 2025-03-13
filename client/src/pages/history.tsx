@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import JapaneseText from "@/components/japanese-text";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Translation } from "@shared/schema";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 
 export default function History() {
   const { toast } = useToast();
@@ -16,7 +15,7 @@ export default function History() {
   const { data: translations = [], isLoading } = useQuery<Translation[]>({
     queryKey: ["/api/translations"],
   });
-  
+
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       return apiRequest("DELETE", `/api/translations/${id}`);
@@ -53,9 +52,9 @@ export default function History() {
             Your previous Japanese translations
           </p>
         </div>
-        <Link to="/">
+        {/* <Link to="/">
           <Button variant="outline">Back to Translator</Button>
-        </Link>
+        </Link> */}
       </div>
 
       {isLoading ? (
@@ -73,20 +72,33 @@ export default function History() {
             <Card key={translation.id} className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{translation.title || "Untitled"}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {translation.title || "Untitled"}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(translation.createdAt!).toLocaleDateString()} {new Date(translation.createdAt!).toLocaleTimeString()} 
+                    {new Date(translation.createdAt!).toLocaleDateString()}{" "}
+                    {new Date(translation.createdAt!).toLocaleTimeString()}
                     {" · "}
                     {translation.tone} tone
                   </p>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0" 
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
                   onClick={() => handleDeleteTranslation(translation.id)}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M3 6h18"></path>
                     <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                     <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
