@@ -192,7 +192,21 @@ export default function TranslationForm({ onTranslate }: { onTranslate: (result:
                   <PopoverContent className="w-32 p-0">
                     <Command>
                       <CommandInput placeholder="Search tags..." className="h-9" />
-                      <CommandEmpty>No tags found.</CommandEmpty>
+                      <CommandEmpty>
+                        <button
+                          className="w-full p-2 text-sm text-left hover:bg-accent cursor-pointer"
+                          onClick={() => {
+                            const value = inputValue.trim();
+                            if (value && !field.value.includes(value)) {
+                              field.onChange([...field.value, value]);
+                              setInputValue('');
+                              setTagInputOpen(false);
+                            }
+                          }}
+                        >
+                          Create "{inputValue}"
+                        </button>
+                      </CommandEmpty>
                       <CommandGroup>
                         {filteredTags.map((tag) => (
                           <CommandItem
