@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import DictionaryPopup from "./dictionary-popup";
+import "./japanese-text.css";
 
 // Helper function to get text content without furigana readings
 function getTextExcludingRt(element: HTMLElement): string {
@@ -112,7 +113,7 @@ export default function JapaneseText({
         <div ref={containerRef} className="space-y-4">
           {/* Japanese text with furigana */}
           <div
-            className={`text-lg ${showFurigana ? "" : "rt-hidden"}`}
+            className={`japanese-text-container ${showFurigana ? "" : "rt-hidden"}`}
             onClick={handleWordClick}
             dangerouslySetInnerHTML={{ __html: text }}
           />

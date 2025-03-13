@@ -1,4 +1,3 @@
-
 /* Styling for Japanese text component */
 .rt-hidden rt {
   display: none;
@@ -9,6 +8,7 @@ rt {
   margin-bottom: 0.75em;
   font-size: 0.65em;
   line-height: 1.8;
+  color: var(--muted-foreground);
 }
 
 ruby {
@@ -18,4 +18,23 @@ ruby {
   text-align: center;
   line-height: 1.8;
   margin: 0 0.1em;
+}
+
+/* Word highlight styles */
+.jp-word {
+  cursor: pointer;
+  padding: 0 0.1em;
+  border-radius: 0.2em;
+  transition: background-color 0.2s ease;
+}
+
+.jp-word:hover {
+  background-color: var(--primary-foreground/10);
+}
+
+/* Improved text container spacing */
+.japanese-text-container {
+  font-size: 1.2em;
+  line-height: 2.5;
+  letter-spacing: 0.02em;
 }
