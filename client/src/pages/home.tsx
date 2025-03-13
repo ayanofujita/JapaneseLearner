@@ -54,8 +54,8 @@ export default function Home() {
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Japanese Translation</h1>
           <p className="text-muted-foreground">
-            Translate English text to Japanese with customizable tone and
-            interactive reading features.
+            Turn your thoughts into Japanese text and practice reading in your
+            own context.
           </p>
         </div>
         {/* <Link to="/history">
