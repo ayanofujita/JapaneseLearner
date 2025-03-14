@@ -5,13 +5,7 @@ import JapaneseText from "@/components/japanese-text";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Translation } from "@shared/schema";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 
 function ImagePreview({ src, index }: { src: string; index: number }) {
   const [isEnlarged, setIsEnlarged] = useState(false);
@@ -25,9 +19,6 @@ function ImagePreview({ src, index }: { src: string; index: number }) {
         onClick={() => setIsEnlarged(true)}
       />
       <Dialog open={isEnlarged} onOpenChange={setIsEnlarged}>
-        <DialogHeader>
-          <DialogTitle>Image {index + 1}</DialogTitle>
-        </DialogHeader>
         <DialogContent>
           <img
             src={src}

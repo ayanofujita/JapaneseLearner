@@ -6,7 +6,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import KanjiStrokeAnimation from "@/components/kanji-stroke-animation"; // Import the animation component
+import KanjiStrokeAnimation from "@/components/kanji-stroke-animation";
 import {
   Collapsible,
   CollapsibleContent,
@@ -249,6 +249,7 @@ export default function DictionaryPopup({
                           {/* Kanji Stroke Animation */}
                           <div className="flex justify-center py-2">
                             <KanjiStrokeAnimation
+                              key={`${kanji}-stroke`}
                               kanji={kanji}
                               size={100}
                               strokeColor="currentColor"

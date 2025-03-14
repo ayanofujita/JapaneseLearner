@@ -21,14 +21,15 @@ export default function KanjiStrokeAnimation({
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const animationTimeouts = useRef<number[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Clear all animation timeouts when component unmounts
+  // Clear all animation timeouts when component unmounts or kanji changes
   useEffect(() => {
     return () => {
       animationTimeouts.current.forEach((id) => window.clearTimeout(id));
       animationTimeouts.current = [];
     };
-  }, []);
+  }, [kanji]);
 
   useEffect(() => {
     setLoading(true);
@@ -44,21 +45,16 @@ export default function KanjiStrokeAnimation({
       try {
         // Get kanji code point in hex
         const kanjiCode = kanji.charCodeAt(0).toString(16).padStart(5, "0");
-
-        // Fetch SVG directly from GitHub
-        const githubUrl = `https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${kanjiCode}.svg`;
-
-        const response = await fetch(githubUrl);
+        const response = await fetch(
+          `https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${kanjiCode}.svg`
+        );
 
         if (!response.ok) {
           setLoading(false);
           return;
         }
 
-        // Get the SVG text content
         const svgText = await response.text();
-
-        // Extract just the SVG element using regex
         const svgMatch = svgText.match(/<svg[^>]*>[\s\S]*<\/svg>/);
 
         if (!svgMatch) {
@@ -67,18 +63,11 @@ export default function KanjiStrokeAnimation({
           return;
         }
 
-        // Get the matched SVG
-        const extractedSvg = svgMatch[0];
-
-        // Process the SVG to add classes for animation
-        let processedSvg = extractedSvg
-          // Set width and height
+        let processedSvg = svgMatch[0]
           .replace(/width="[^"]+"/, `width="${size}"`)
           .replace(/height="[^"]+"/, `height="${size}"`)
-          // Add stroke path class
-          .replace(/<path /g, '<path class="kanji-stroke" ')
-          // Add number text class
-          .replace(/<text /g, '<text class="stroke-number" ');
+          .replace(/<path /g, `<path class="kanji-stroke-${kanji}" `)
+          .replace(/<text /g, `<text class="stroke-number-${kanji}" `);
 
         setSvgContent(processedSvg);
         setLoading(false);
@@ -92,6 +81,8 @@ export default function KanjiStrokeAnimation({
   }, [kanji, size]);
 
   const playAnimation = () => {
+    if (!containerRef.current) return;
+
     // Clear any existing timeouts
     animationTimeouts.current.forEach((id) => window.clearTimeout(id));
     animationTimeouts.current = [];
@@ -100,12 +91,13 @@ export default function KanjiStrokeAnimation({
 
     // Find all stroke paths and animate them sequentially
     setTimeout(() => {
-      const paths = document.querySelectorAll(".kanji-stroke");
-      const numbers = document.querySelectorAll(".stroke-number");
+      const paths = containerRef.current?.querySelectorAll(`.kanji-stroke-${kanji}`);
+      const numbers = containerRef.current?.querySelectorAll(`.stroke-number-${kanji}`);
+
+      if (!paths || !numbers) return;
 
       // Reset all paths and numbers
       paths.forEach((path) => {
-        // Reset the path
         path.removeAttribute("style");
         path.setAttribute(
           "style",
@@ -117,7 +109,7 @@ export default function KanjiStrokeAnimation({
           stroke-linejoin: round;
           stroke-dasharray: 1000;
           stroke-dashoffset: 1000;
-        `,
+        `
         );
       });
 
@@ -127,16 +119,22 @@ export default function KanjiStrokeAnimation({
 
       // Animate each path
       paths.forEach((path, index) => {
-        // Animate this path after a delay based on its index
         const timeoutId = window.setTimeout(
           () => {
-            path.style.transition = `stroke-dashoffset ${animationDuration}s ease`;
-            path.style.strokeDashoffset = "0";
+            path.setAttribute("style", `
+              fill: none;
+              stroke: ${strokeColor};
+              stroke-width: ${strokeWidth};
+              stroke-linecap: round;
+              stroke-linejoin: round;
+              stroke-dasharray: 1000;
+              stroke-dashoffset: 0;
+              transition: stroke-dashoffset ${animationDuration}s ease;
+            `);
 
             // Show the corresponding number
             if (numbers[index]) {
-              numbers[index].style.transition = "opacity 0.5s ease";
-              numbers[index].style.opacity = "1";
+              numbers[index].setAttribute("style", "opacity: 1; transition: opacity 0.5s ease;");
             }
 
             // When last stroke is done, set playing to false
@@ -146,12 +144,12 @@ export default function KanjiStrokeAnimation({
                   setIsPlaying(false);
                   setHasPlayed(true);
                 },
-                animationDuration * 1000 + 100,
+                animationDuration * 1000 + 100
               );
               animationTimeouts.current.push(finalTimeoutId);
             }
           },
-          index * ((animationDuration * 1000) / 2),
+          index * ((animationDuration * 1000) / 2)
         );
 
         animationTimeouts.current.push(timeoutId);
@@ -159,7 +157,6 @@ export default function KanjiStrokeAnimation({
     }, 100);
   };
 
-  // If no SVG content is available, just display the kanji character
   if (!svgContent && !loading) {
     return (
       <div
@@ -177,17 +174,12 @@ export default function KanjiStrokeAnimation({
 
   return (
     <div
+      ref={containerRef}
       className="relative kanji-animation-wrapper"
       style={{ width: size, height: size }}
     >
       <style>
         {`
-          @keyframes drawStroke {
-            to {
-              stroke-dashoffset: 0;
-            }
-          }
-
           .animation-button {
             position: absolute;
             top: 5px;
