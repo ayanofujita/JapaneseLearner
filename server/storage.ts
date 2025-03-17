@@ -36,6 +36,7 @@ export interface IStorage {
   getSavedWords(userId: number): Promise<SavedWord[]>;
   updateWordReview(id: number, nextReview: Date): Promise<SavedWord>;
   getWordCount(userId: number, wordText: string): Promise<number>;
+  deleteWord(id: number): Promise<void>;
 
   // Session store
   sessionStore: session.Store;
@@ -154,6 +155,10 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedWord;
+  }
+
+  async deleteWord(id: number): Promise<void> {
+    await db.delete(savedWords).where(eq(savedWords.id, id));
   }
 }
 

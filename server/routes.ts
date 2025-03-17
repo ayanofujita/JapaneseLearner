@@ -173,6 +173,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/words/:id", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid word ID" });
+      }
+
+      // Verify the word belongs to the user before deleting
+      const words = await storage.getSavedWords(req.user.id);
+      const word = words.find(w => w.id === id);
+
+      if (!word) {
+        return res.status(404).json({ message: "Word not found" });
+      }
+
+      await storage.deleteWord(id);
+      res.status(200).json({ message: "Word deleted successfully" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
+      res.status(500).json({ message });
+    }
+  });
+
   app.get("/api/dictionary/:word", async (req, res) => {
     try {
       const { word } = req.params;
