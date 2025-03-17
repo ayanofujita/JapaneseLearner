@@ -12,14 +12,17 @@ interface StudyCardProps {
 
 export default function StudyCard({ word, onComplete }: StudyCardProps) {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Reset showAnswer when word changes
   useEffect(() => {
     setShowAnswer(false);
+    setIsTransitioning(false);
   }, [word.id]);
 
   const { mutate } = useMutation({
     mutationFn: async (confidence: number) => {
+      setIsTransitioning(true);
       // Calculate next review date based on confidence and review count
       const days = confidence * ((word.reviewCount || 0) + 1);
       const nextReview = new Date();
@@ -33,8 +36,21 @@ export default function StudyCard({ word, onComplete }: StudyCardProps) {
     onSuccess: () => {
       // Only call onComplete after the mutation is successful
       onComplete();
+    },
+    onSettled: () => {
+      setIsTransitioning(false);
     }
   });
+
+  if (isTransitioning) {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardContent className="p-6 text-center text-muted-foreground">
+          Saving progress...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-md mx-auto">
