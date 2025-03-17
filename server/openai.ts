@@ -34,126 +34,46 @@ Requirements:
 }
 
 /**
- * Step 1: Wrap appropriate words in jp-word spans
- * This function identifies Japanese words and wraps them in spans
+ * Step 1: Identify individual Japanese words and wrap them in spans
  */
-export function wrapJapaneseWords(text: string): string {
-  // This regex matches consecutive Japanese characters (kanji, hiragana, or katakana)
-  const japaneseWordPattern = /[一-龯ぁ-んァ-ン]+[一-龯ぁ-んァ-ン]*/g;
-
-  // Common Japanese particles to exclude from word wrapping
-  const particles = [
-    "は",
-    "が",
-    "の",
-    "を",
-    "に",
-    "へ",
-    "で",
-    "と",
-    "も",
-    "や",
-    "か",
-    "より",
-    "から",
-    "まで",
-    "ながら",
-    "ので",
-    "のに",
-    "けれど",
-    "けれども",
-    "が",
-    "けど",
-  ];
-
-  // Store positions of all particles to avoid wrapping them
-  const particlePositions = [];
-  for (const particle of particles) {
-    let position = -1;
-    while ((position = text.indexOf(particle, position + 1)) !== -1) {
-      // Check if it's a standalone particle (not part of a word)
-      const prevChar = position > 0 ? text.charAt(position - 1) : "";
-      const nextChar =
-        position + particle.length < text.length
-          ? text.charAt(position + particle.length)
-          : "";
-
-      const isPrevJapanese = /[一-龯ぁ-んァ-ン]/.test(prevChar);
-      const isNextJapanese = /[一-龯ぁ-んァ-ン]/.test(nextChar);
-
-      // If it looks like a standalone particle
-      if (!isPrevJapanese || !isNextJapanese) {
-        particlePositions.push({
-          start: position,
-          end: position + particle.length,
-        });
-      }
-    }
-  }
-
-  // Find all Japanese words
-  const matches = [];
-  let match;
-  while ((match = japaneseWordPattern.exec(text)) !== null) {
-    const start = match.index;
-    const end = start + match[0].length;
-
-    // Check if this match overlaps with any particle
-    const isParticle = particlePositions.some(
-      (p) =>
-        (start >= p.start && start < p.end) || (end > p.start && end <= p.end),
-    );
-
-    if (!isParticle) {
-      matches.push({ start, end, text: match[0] });
-    }
-  }
-
-  // Apply the spans, working from the end to avoid messing up indices
-  let result = text;
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const { start, end } = matches[i];
-    result =
-      result.substring(0, start) +
-      `<span class="jp-word">${result.substring(start, end)}</span>` +
-      result.substring(end);
-  }
-
-  return result;
-}
-
-/**
- * Step 2: Add ruby tags to kanji characters within jp-word spans
- */
-export async function addRubyToSpans(text: string): Promise<string> {
+export async function identifyAndWrapWords(text: string): Promise<string> {
   try {
-    const systemPrompt = `You are a specialized Japanese language processor with expertise in furigana annotation.
+    const systemPrompt = `You are a Japanese language expert who can identify individual words in Japanese text.
 
-TASK: Add ruby markup to kanji characters ONLY within span tags
+TASK: Identify INDIVIDUAL Japanese words in the text and wrap ONLY single words in <span class="jp-word"> tags.
 
-INPUT FORMAT: Text with Japanese words already wrapped in <span class="jp-word">...</span> tags
+CRITICAL RULES:
+1. Wrap ONLY SINGLE WORDS in <span class="jp-word"> tags:
+   - Individual nouns (名詞): 本, 東京, 先生
+   - Individual verbs (動詞): 読む, 食べる, 行く
+   - Individual adjectives (形容詞/形容動詞): 美しい, 静か, 赤い
+   - Individual adverbs (副詞): とても, すぐに, もっと
 
-OUTPUT REQUIREMENTS:
-1. ONLY modify content within <span class="jp-word"> tags:
-   - Leave all text outside spans completely unchanged
-   - Preserve all span tags exactly as they are
+2. DO NOT wrap in spans:
+   - Particles (助詞): は, が, の, を, に, へ, で, と, etc.
+   - Punctuation: 。, 、, ！, ？, etc.
+   - Multiple words or phrases together
+   - Entire clauses or sentences
 
-2. For kanji characters within spans:
-   - Wrap ONLY the kanji characters in <ruby>...</ruby> tags
-   - Add the reading in <rt>...</rt> tags
-   - Do not modify hiragana or katakana within spans
+3. CRITICAL: Each span must contain EXACTLY ONE WORD:
+   - "美しい花" should be "<span class="jp-word">美しい</span><span class="jp-word">花</span>"
+   - NOT "<span class="jp-word">美しい花</span>" (wrong - contains two words)
 
-3. Be precise about readings:
-   - Provide accurate readings for each kanji based on context
-   - Consider the word context for choosing the correct reading
+4. Compound words count as single words:
+   - Examples: 日本語, 図書館, 新幹線
 
-EXAMPLE:
+EXAMPLES:
 
-Input: "こんにちは<span class="jp-word">世界</span>と<span class="jp-word">日本語</span>の<span class="jp-word">勉強</span>。"
+Input: "私は東京に住んでいます。"
+Correct: "<span class="jp-word">私</span>は<span class="jp-word">東京</span>に<span class="jp-word">住んで</span><span class="jp-word">います</span>。"
+Incorrect: "<span class="jp-word">私は東京に住んでいます</span>。" (wrong - wraps an entire sentence)
 
-Output: "こんにちは<span class="jp-word"><ruby>世界<rt>せかい</rt></ruby></span>と<span class="jp-word"><ruby>日本語<rt>にほんご</rt></ruby></span>の<span class="jp-word"><ruby>勉強<rt>べんきょう</rt></ruby></span>。"
+Input: "彼女は美しい花を見ました。"
+Correct: "<span class="jp-word">彼女</span>は<span class="jp-word">美しい</span><span class="jp-word">花</span>を<span class="jp-word">見ました</span>。"
+Incorrect: "<span class="jp-word">彼女は美しい花を</span><span class="jp-word">見ました</span>。" (wrong - wraps multiple words together)
 
-IMPORTANT: Output ONLY the text with ruby annotations added. No explanations, no markdown code blocks.`;
+OUTPUT: The original text with individual words properly wrapped in spans.
+Do not add any explanations, just output the modified text.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -161,16 +81,55 @@ IMPORTANT: Output ONLY the text with ruby annotations added. No explanations, no
         { role: "system", content: systemPrompt },
         { role: "user", content: text },
       ],
-      temperature: 0.1, // Very low temperature for consistent formatting
+      temperature: 0.1, // Low temperature for consistent formatting
     });
 
-    // Clean up the response
-    let content = response.choices[0].message.content || text;
-    return content.replace(/^```html\s*/g, "").replace(/\s*```$/g, "");
+    return response.choices[0].message.content || text;
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
-    console.error(`Failed to add ruby: ${message}`);
+    console.error(`Failed to identify words: ${message}`);
+    return text; // Return original text if failed
+  }
+}
+
+/**
+ * Step 2: Add ruby tags to kanji within span tags
+ */
+export async function addRubyAnnotations(text: string): Promise<string> {
+  try {
+    const systemPrompt = `You are a Japanese language expert specializing in furigana annotations.
+
+TASK: Add ruby annotations to kanji characters ONLY within <span class="jp-word"> tags.
+
+RULES:
+1. Only modify content inside <span class="jp-word"> tags
+2. For kanji or kanji compounds inside spans:
+   - Wrap them in <ruby> tags
+   - Add the correct reading in <rt> tags
+3. Do not modify anything outside of the spans
+4. Do not change the span tags themselves
+
+Example:
+Input: "<span class="jp-word">日本語</span>を<span class="jp-word">勉強</span>します。"
+Output: "<span class="jp-word"><ruby>日本語<rt>にほんご</rt></ruby></span>を<span class="jp-word"><ruby>勉強<rt>べんきょう</rt></ruby></span>します。"
+
+Output ONLY the modified text, no explanations.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: text },
+      ],
+      temperature: 0.1, // Low temperature for consistent results
+    });
+
+    return response.choices[0].message.content || text;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error(`Failed to add ruby annotations: ${message}`);
 
     // Simple fallback that adds ruby tags to kanji within spans
     return text.replace(
@@ -186,17 +145,17 @@ IMPORTANT: Output ONLY the text with ruby annotations added. No explanations, no
 }
 
 /**
- * Full furigana process that combines both steps in the improved order
+ * Complete furigana process using two OpenAI calls
  */
 export async function addFurigana(text: string): Promise<string> {
   try {
-    // Step 1: Wrap Japanese words with spans first
-    const withSpans = wrapJapaneseWords(text);
+    // Step 1: Identify and wrap individual Japanese words
+    const wrappedText = await identifyAndWrapWords(text);
 
     // Step 2: Add ruby annotations to kanji within spans
-    const withRuby = await addRubyToSpans(withSpans);
+    const annotatedText = await addRubyAnnotations(wrappedText);
 
-    return withRuby;
+    return annotatedText;
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
