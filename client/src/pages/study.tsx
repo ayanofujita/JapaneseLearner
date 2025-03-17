@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import StudyCard from "@/components/study-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { SavedWord } from "@shared/schema";
@@ -58,18 +58,6 @@ export default function Study() {
     word.nextReview ? new Date(word.nextReview) <= new Date() : true
   );
 
-  const goToNextCard = () => {
-    if (currentCardIndex < dueWords.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1);
-    }
-  };
-
-  const goToPreviousCard = () => {
-    if (currentCardIndex > 0) {
-      setCurrentCardIndex(currentCardIndex - 1);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-2">
@@ -81,37 +69,21 @@ export default function Study() {
 
       {dueWords.length > 0 ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="outline"
-              onClick={goToPreviousCard}
-              disabled={currentCardIndex === 0}
-            >
-              <ChevronLeftIcon className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Card {currentCardIndex + 1} of {dueWords.length}
-            </span>
-            <Button
-              variant="outline"
-              onClick={goToNextCard}
-              disabled={currentCardIndex === dueWords.length - 1}
-            >
-              Next
-              <ChevronRightIcon className="h-4 w-4 ml-2" />
-            </Button>
+          <div className="text-center text-sm text-muted-foreground mb-4">
+            Card {currentCardIndex + 1} of {dueWords.length}
           </div>
-          <StudyCard
-            key={dueWords[currentCardIndex].id}
-            word={dueWords[currentCardIndex]}
-            onComplete={() => {
-              refetch();
-              if (currentCardIndex < dueWords.length - 1) {
-                goToNextCard();
-              }
-            }}
-          />
+          {currentCardIndex < dueWords.length && (
+            <StudyCard
+              key={dueWords[currentCardIndex].id}
+              word={dueWords[currentCardIndex]}
+              onComplete={() => {
+                refetch();
+                if (currentCardIndex < dueWords.length - 1) {
+                  setCurrentCardIndex(currentCardIndex + 1);
+                }
+              }}
+            />
+          )}
         </div>
       ) : (
         <Card className="p-6 text-center">
