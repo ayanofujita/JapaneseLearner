@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SavedWord } from "@shared/schema";
@@ -13,6 +13,11 @@ interface StudyCardProps {
 export default function StudyCard({ word, onComplete }: StudyCardProps) {
   const [showAnswer, setShowAnswer] = useState(false);
 
+  // Reset showAnswer when word changes
+  useEffect(() => {
+    setShowAnswer(false);
+  }, [word.id]);
+
   const { mutate } = useMutation({
     mutationFn: async (confidence: number) => {
       // Calculate next review date based on confidence and review count
@@ -25,7 +30,10 @@ export default function StudyCard({ word, onComplete }: StudyCardProps) {
       });
       return res.json();
     },
-    onSuccess: onComplete
+    onSuccess: () => {
+      // Only call onComplete after the mutation is successful
+      onComplete();
+    }
   });
 
   return (
