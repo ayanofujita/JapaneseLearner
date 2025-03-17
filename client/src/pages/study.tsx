@@ -6,9 +6,22 @@ import { Trash2Icon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { SavedWord } from "@shared/schema";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 export default function Study() {
   const { toast } = useToast();
+  const [wordToDelete, setWordToDelete] = useState<SavedWord | null>(null);
+
   const { data: words = [], refetch } = useQuery<SavedWord[]>({
     queryKey: ["/api/words"],
   });
@@ -28,6 +41,7 @@ export default function Study() {
         description: "Word has been removed from your study list",
       });
       refetch();
+      setWordToDelete(null);
     },
     onError: (error: Error) => {
       toast({
@@ -35,6 +49,7 @@ export default function Study() {
         description: error.message || "Failed to delete word",
         variant: "destructive",
       });
+      setWordToDelete(null);
     },
   });
 
@@ -83,7 +98,7 @@ export default function Study() {
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-destructive"
-                  onClick={() => deleteWord(word.id)}
+                  onClick={() => setWordToDelete(word)}
                 >
                   <Trash2Icon className="h-4 w-4" />
                 </Button>
@@ -92,6 +107,27 @@ export default function Study() {
           ))}
         </div>
       </div>
+
+      <AlertDialog open={!!wordToDelete} onOpenChange={(open) => !open && setWordToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Word</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{wordToDelete?.word}" from your study list? 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => wordToDelete && deleteWord(wordToDelete.id)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
