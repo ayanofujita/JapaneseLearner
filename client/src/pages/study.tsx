@@ -58,6 +58,11 @@ export default function Study() {
     word.nextReview ? new Date(word.nextReview) <= new Date() : true
   );
 
+  // Filter out words that are due for review from the all words list
+  const nonDueWords = words.filter(word => 
+    !dueWords.some(dueWord => dueWord.id === word.id)
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-2">
@@ -96,7 +101,7 @@ export default function Study() {
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">All Saved Words</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {words.map(word => (
+          {nonDueWords.map(word => (
             <Card key={word.id} className="p-4">
               <div className="flex justify-between items-start">
                 <div>
