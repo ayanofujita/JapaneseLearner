@@ -253,6 +253,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/words/check/:word", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const wordText = req.params.word;
+      const count = await storage.getWordCount(req.user.id, wordText);
+      res.json({ isSaved: count > 0 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
+      res.status(500).json({ message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

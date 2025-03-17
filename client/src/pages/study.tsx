@@ -54,13 +54,13 @@ export default function Study() {
     },
   });
 
-  const dueWords = words.filter(word => 
-    word.nextReview ? new Date(word.nextReview) <= new Date() : true
+  const dueWords = words.filter((word) =>
+    word.nextReview ? new Date(word.nextReview) <= new Date() : true,
   );
 
   // Filter out words that are due for review from the all words list
-  const nonDueWords = words.filter(word => 
-    !dueWords.some(dueWord => dueWord.id === word.id)
+  const nonDueWords = words.filter(
+    (word) => !dueWords.some((dueWord) => dueWord.id === word.id),
   );
 
   return (
@@ -74,9 +74,6 @@ export default function Study() {
 
       {dueWords.length > 0 ? (
         <div className="space-y-4">
-          <div className="text-center text-sm text-muted-foreground mb-4">
-            Card {currentCardIndex + 1} of {dueWords.length}
-          </div>
           {currentCardIndex < dueWords.length && (
             <StudyCard
               key={dueWords[currentCardIndex].id}
@@ -93,7 +90,8 @@ export default function Study() {
       ) : (
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">
-            No words due for review. Come back later or add more words from the translator.
+            No words due for review. Come back later or add more words from the
+            translator.
           </p>
         </Card>
       )}
@@ -101,7 +99,7 @@ export default function Study() {
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">All Saved Words</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {nonDueWords.map(word => (
+          {nonDueWords.map((word) => (
             <Card key={word.id} className="p-4">
               <div className="flex justify-between items-start">
                 <div>
@@ -110,7 +108,10 @@ export default function Study() {
                     {word.reading} · {word.meaning}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Next review: {word.nextReview ? new Date(word.nextReview).toLocaleDateString() : 'Not scheduled'}
+                    Next review:{" "}
+                    {word.nextReview
+                      ? new Date(word.nextReview).toLocaleDateString()
+                      : "Not scheduled"}
                   </p>
                 </div>
                 <Button
@@ -127,13 +128,16 @@ export default function Study() {
         </div>
       </div>
 
-      <AlertDialog open={!!wordToDelete} onOpenChange={(open) => !open && setWordToDelete(null)}>
+      <AlertDialog
+        open={!!wordToDelete}
+        onOpenChange={(open) => !open && setWordToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Word</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{wordToDelete?.word}" from your study list? 
-              This action cannot be undone.
+              Are you sure you want to delete "{wordToDelete?.word}" from your
+              study list? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

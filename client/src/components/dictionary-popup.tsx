@@ -62,6 +62,16 @@ export default function DictionaryPopup({
     extractKanji(word),
   );
 
+  // Check if the word is already saved
+  const { data: savedStatus } = useQuery({
+    queryKey: ["/api/words/check", word],
+    queryFn: async () => {
+      const res = await fetch(`/api/words/check/${encodeURIComponent(word)}`);
+      if (!res.ok) throw new Error("Failed to check word status");
+      return res.json();
+    },
+  });
+
   const { data: wordData, isLoading } = useQuery<WordData | null>({
     queryKey: ["/api/dictionary", word],
     queryFn: async () => {
@@ -318,7 +328,7 @@ export default function DictionaryPopup({
 
             <Button
               size="sm"
-              variant="outline"
+              variant={savedStatus?.isSaved ? "secondary" : "outline"}
               className="w-full"
               onClick={() => {
                 if (wordData?.reading && wordData?.meaning) {
@@ -329,9 +339,10 @@ export default function DictionaryPopup({
                   });
                 }
               }}
+              disabled={savedStatus?.isSaved}
             >
               <BookmarkIcon className="h-4 w-4 mr-2" />
-              Save for Study
+              {savedStatus?.isSaved ? "Already Saved" : "Save for Study"}
             </Button>
           </>
         ) : (
