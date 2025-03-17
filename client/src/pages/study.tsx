@@ -67,10 +67,15 @@ export default function Study() {
       </div>
 
       {dueWords.length > 0 ? (
-        <StudyCard
-          word={dueWords[0]}
-          onComplete={() => refetch()}
-        />
+        <div className="space-y-4">
+          {dueWords.map(word => (
+            <StudyCard
+              key={word.id}
+              word={word}
+              onComplete={() => refetch()}
+            />
+          ))}
+        </div>
       ) : (
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">
