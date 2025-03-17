@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import KanjiStrokeAnimation from "@/components/kanji-stroke-animation";
+import { queryClient } from "@/lib/queryClient";
 import {
   Collapsible,
   CollapsibleContent,
@@ -124,6 +125,9 @@ export default function DictionaryPopup({
       return res.json();
     },
     onSuccess: (data) => {
+      // Invalidate the word check query to refresh the saved status
+      queryClient.invalidateQueries({ queryKey: ["/api/words/check", word] });
+
       if (data.message === "Word already saved") {
         toast({
           title: "Word already saved",
