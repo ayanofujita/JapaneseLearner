@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function translateText(
   text: string,
@@ -135,7 +135,7 @@ Output ONLY the modified text, no explanations.`;
     return text.replace(
       /<span class="jp-word">([^<]+)<\/span>/g,
       (match, content) => {
-        const withRuby = content.replace(/[\u4e00-\u9faf]+/g, (kanji) => {
+        const withRuby = content.replace(/[\u4e00-\u9faf]+/g, (kanji: string) => {
           return `<ruby>${kanji}<rt>?</rt></ruby>`;
         });
         return `<span class="jp-word">${withRuby}</span>`;
