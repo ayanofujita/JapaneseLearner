@@ -77,12 +77,16 @@ export default function Study() {
       <Tabs defaultValue="flashcards" className="w-full">
         <TabsList className="tabs-list">
           <TabsTrigger value="flashcards" className="tabs-trigger">
-            <BookOpenCheck className="mr-2 h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Flashcards</span>
+            <div className="flex items-center justify-center">
+              <BookOpenCheck className="mr-2 h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Flashcards</span>
+            </div>
           </TabsTrigger>
           <TabsTrigger value="quiz" className="tabs-trigger">
-            <FlaskConical className="mr-2 h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Quiz</span>
+            <div className="flex items-center justify-center">
+              <FlaskConical className="mr-2 h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Quiz</span>
+            </div>
           </TabsTrigger>
         </TabsList>
         

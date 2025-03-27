@@ -19,20 +19,42 @@
 
 /* Custom tabs styling override */
 .tabs-list {
-  @apply w-full grid grid-cols-2 rounded-md bg-muted p-1 text-muted-foreground overflow-hidden;
+  @apply w-full grid grid-cols-2 rounded-md bg-muted p-0 text-muted-foreground overflow-hidden;
   box-sizing: border-box;
+  min-height: 44px;
+  height: 44px;
+  padding: 3px !important;
 }
 
 .tabs-trigger {
-  @apply flex items-center justify-center py-2 rounded-sm mx-0 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none;
-  min-height: 40px;
+  @apply flex items-center justify-center rounded-sm mx-0 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none;
+  min-height: 38px;
+  max-height: 38px;
+  height: 38px;
+  line-height: 38px;
   border-radius: 0.25rem !important;
   margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* Override shadcn default tab styling that might be causing the issue */
 [role="tablist"] {
   @apply overflow-hidden;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 3px !important;
+}
+
+[role="tab"] {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 [role="tab"][data-state="active"] {
@@ -41,4 +63,5 @@
   box-shadow: none !important;
   border-radius: 0.25rem !important;
   margin: 0 !important;
+  height: 38px !important;
 }

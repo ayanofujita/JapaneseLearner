@@ -63,8 +63,12 @@ export default function Auth() {
           <CardContent>
             <Tabs defaultValue="login">
               <TabsList className="tabs-list">
-                <TabsTrigger value="login" className="tabs-trigger py-2">Login</TabsTrigger>
-                <TabsTrigger value="register" className="tabs-trigger py-2">Register</TabsTrigger>
+                <TabsTrigger value="login" className="tabs-trigger">
+                  <div className="flex items-center justify-center">Login</div>
+                </TabsTrigger>
+                <TabsTrigger value="register" className="tabs-trigger">
+                  <div className="flex items-center justify-center">Register</div>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="space-y-4 pt-4">
                 <div className="space-y-2">
