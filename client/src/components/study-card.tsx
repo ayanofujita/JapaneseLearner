@@ -34,14 +34,10 @@ export default function StudyCard({ word, onComplete }: StudyCardProps) {
       return res.json();
     },
     onSuccess: () => {
-      // Add a small delay to prevent the flash of the next card
-      setTimeout(() => {
-        onComplete();
-        setIsTransitioning(false); 
-      }, 300);
+      // Only call onComplete after the mutation is successful
+      onComplete();
     },
-    onError: () => {
-      // Make sure transitioning state is reset on error
+    onSettled: () => {
       setIsTransitioning(false);
     }
   });

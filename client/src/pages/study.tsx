@@ -16,12 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Study() {
   const { toast } = useToast();
   const [wordToDelete, setWordToDelete] = useState<SavedWord | null>(null);
-  const [processedWordIds, setProcessedWordIds] = useState<number[]>([]);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const { data: words = [], refetch } = useQuery<SavedWord[]>({
     queryKey: ["/api/words"],
@@ -54,50 +54,14 @@ export default function Study() {
     },
   });
 
-  // Filter words that are due for review AND haven't been processed in this session
-  const dueWords = words.filter(
-    (word) =>
-      (word.nextReview ? new Date(word.nextReview) <= new Date() : true) &&
-      !processedWordIds.includes(word.id),
+  const dueWords = words.filter((word) =>
+    word.nextReview ? new Date(word.nextReview) <= new Date() : true,
   );
 
-  // For "All Saved Words", show words that are NOT due for review and NOT in processed list
+  // Filter out words that are due for review from the all words list
   const nonDueWords = words.filter(
-    (word) => 
-      (word.nextReview ? new Date(word.nextReview) > new Date() : false) &&
-      !processedWordIds.includes(word.id)
+    (word) => !dueWords.some((dueWord) => dueWord.id === word.id),
   );
-
-  // Handle word completion without refetching
-  const handleWordComplete = (wordId: number) => {
-    // Just mark this word as processed locally
-    setProcessedWordIds((prev) => [...prev, wordId]);
-
-    // Only refetch when all words are processed (to check for new due words)
-    if (dueWords.length === 1) {
-      setTimeout(() => {
-        refetch();
-      }, 1000);
-    }
-  };
-
-  // Reset processed words when user returns to the page or after a long session
-  useEffect(() => {
-    // If there are no due words but we've processed some, check if any new ones became due
-    if (dueWords.length === 0 && processedWordIds.length > 0) {
-      const checkForNewDueWords = setTimeout(() => {
-        refetch();
-        // Reset processed words if we've been away for a while
-        const resetProcessedWords = setTimeout(() => {
-          setProcessedWordIds([]);
-        }, 3600000); // Reset after an hour
-
-        return () => clearTimeout(resetProcessedWords);
-      }, 300000); // Check for new due words every 5 minutes
-
-      return () => clearTimeout(checkForNewDueWords);
-    }
-  }, [dueWords.length, processedWordIds.length, refetch]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -110,18 +74,24 @@ export default function Study() {
 
       {dueWords.length > 0 ? (
         <div className="space-y-4">
-          <StudyCard
-            key={dueWords[0].id}
-            word={dueWords[0]}
-            onComplete={() => handleWordComplete(dueWords[0].id)}
-          />
+          {currentCardIndex < dueWords.length && (
+            <StudyCard
+              key={dueWords[currentCardIndex].id}
+              word={dueWords[currentCardIndex]}
+              onComplete={() => {
+                refetch();
+                if (currentCardIndex < dueWords.length - 1) {
+                  setCurrentCardIndex(currentCardIndex + 1);
+                }
+              }}
+            />
+          )}
         </div>
       ) : (
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">
-            {processedWordIds.length > 0
-              ? "Great job! You've completed all your reviews for now."
-              : "No words due for review. Come back later or add more words from the translator."}
+            No words due for review. Come back later or add more words from the
+            translator.
           </p>
         </Card>
       )}
