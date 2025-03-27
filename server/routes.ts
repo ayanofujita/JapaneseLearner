@@ -8,7 +8,7 @@ import { setupAuth } from "./auth";
 import { searchWord } from "./jisho";
 import { getKanjiDetails } from "./kanji";
 import { getKanjiStrokes } from "./kanji-strokes";
-import { generateQuiz } from "./quiz";
+import { generateQuiz } from "./quiz.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes and middleware
