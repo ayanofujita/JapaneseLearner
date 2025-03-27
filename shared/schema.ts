@@ -41,7 +41,6 @@ export const insertTranslationSchema = createInsertSchema(translations).pick({
   englishText: true,
   japaneseText: true,
   tone: true,
-  title: true,
 }).extend({
   images: z.array(z.string()).max(4).optional(),
   tags: z.array(z.string()).max(10).optional(), // Add tags to schema

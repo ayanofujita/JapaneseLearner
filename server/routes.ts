@@ -8,7 +8,6 @@ import { setupAuth } from "./auth";
 import { searchWord } from "./jisho";
 import { getKanjiDetails } from "./kanji";
 import { getKanjiStrokes } from "./kanji-strokes";
-import { generateQuiz } from "./quiz";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes and middleware
@@ -263,34 +262,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wordText = req.params.word;
       const count = await storage.getWordCount(req.user.id, wordText);
       res.json({ isSaved: count > 0 });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unknown error occurred";
-      res.status(500).json({ message });
-    }
-  });
-  
-  app.get("/api/quiz", async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
-      // Get translations to generate quiz from
-      const translations = await storage.getTranslations(req.user.id);
-      
-      if (translations.length === 0) {
-        return res.status(404).json({ 
-          message: "No translations found. Create some translations first to generate quiz questions." 
-        });
-      }
-      
-      // Get query parameters
-      const count = req.query.count ? parseInt(req.query.count as string) : 5;
-      const difficulty = (req.query.difficulty as string) || 'medium';
-      
-      // Generate quiz questions
-      const quiz = await generateQuiz(translations, count, difficulty);
-      res.json(quiz);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
