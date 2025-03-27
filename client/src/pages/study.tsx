@@ -3,11 +3,11 @@ import StudyCard from "@/components/study-card";
 import Quiz from "@/components/quiz";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2Icon, BookOpenCheck, FlaskConical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { SavedWord } from "@shared/schema";
-import { BasicTabs, Tab } from "@/components/basic-tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,87 +74,80 @@ export default function Study() {
         </p>
       </div>
       
-      <BasicTabs defaultTab="flashcards">
-        <Tab 
-          id="flashcards" 
-          label={
-            <div className="flex items-center">
-              <BookOpenCheck className="mr-2 h-4 w-4" />
-              <span>Flashcards</span>
-            </div>
-          }
-        >
-          <div className="space-y-6">
-            {dueWords.length > 0 ? (
-              <div className="space-y-4">
-                {currentCardIndex < dueWords.length && (
-                  <StudyCard
-                    key={dueWords[currentCardIndex].id}
-                    word={dueWords[currentCardIndex]}
-                    onComplete={() => {
-                      refetch();
-                      if (currentCardIndex < dueWords.length - 1) {
-                        setCurrentCardIndex(currentCardIndex + 1);
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            ) : (
-              <Card className="p-6 text-center">
-                <p className="text-muted-foreground">
-                  No words due for review. Come back later or add more words from the
-                  translator.
-                </p>
-              </Card>
-            )}
-
+      <Tabs defaultValue="flashcards" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="flashcards" className="flex items-center">
+            <BookOpenCheck className="mr-2 h-4 w-4" />
+            Flashcards
+          </TabsTrigger>
+          <TabsTrigger value="quiz" className="flex items-center">
+            <FlaskConical className="mr-2 h-4 w-4" />
+            Quiz
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="flashcards" className="space-y-6 pt-6">
+          {dueWords.length > 0 ? (
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold">All Saved Words</h2>
-              <div className="grid gap-4 md:grid-cols-2">
-                {nonDueWords.map((word) => (
-                  <Card key={word.id} className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold mb-1">{word.word}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {word.reading} · {word.meaning}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Next review:{" "}
-                          {word.nextReview
-                            ? new Date(word.nextReview).toLocaleDateString()
-                            : "Not scheduled"}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive"
-                        onClick={() => setWordToDelete(word)}
-                      >
-                        <Trash2Icon className="h-4 w-4" />
-                      </Button>
+              {currentCardIndex < dueWords.length && (
+                <StudyCard
+                  key={dueWords[currentCardIndex].id}
+                  word={dueWords[currentCardIndex]}
+                  onComplete={() => {
+                    refetch();
+                    if (currentCardIndex < dueWords.length - 1) {
+                      setCurrentCardIndex(currentCardIndex + 1);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground">
+                No words due for review. Come back later or add more words from the
+                translator.
+              </p>
+            </Card>
+          )}
+
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">All Saved Words</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {nonDueWords.map((word) => (
+                <Card key={word.id} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold mb-1">{word.word}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {word.reading} · {word.meaning}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Next review:{" "}
+                        {word.nextReview
+                          ? new Date(word.nextReview).toLocaleDateString()
+                          : "Not scheduled"}
+                      </p>
                     </div>
-                  </Card>
-                ))}
-              </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => setWordToDelete(word)}
+                    >
+                      <Trash2Icon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
             </div>
           </div>
-        </Tab>
+        </TabsContent>
         
-        <Tab 
-          id="quiz" 
-          label={
-            <div className="flex items-center">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              <span>Quiz</span>
-            </div>
-          }
-        >
+        <TabsContent value="quiz" className="pt-6">
           <Quiz />
-        </Tab>
-      </BasicTabs>
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog
         open={!!wordToDelete}

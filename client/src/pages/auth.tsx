@@ -62,17 +62,9 @@ export default function Auth() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
-              <TabsList className="tabs-list">
-                <TabsTrigger value="login" className="tabs-trigger">
-                  <div className="flex items-center justify-center w-full">
-                    <span className="text-sm md:text-base">Login</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="register" className="tabs-trigger">
-                  <div className="flex items-center justify-center w-full">
-                    <span className="text-sm md:text-base">Register</span>
-                  </div>
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="space-y-4 pt-4">
                 <div className="space-y-2">
