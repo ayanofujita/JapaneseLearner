@@ -26,14 +26,24 @@ export interface Quiz {
 
 /**
  * Extract Japanese words that could be used for a quiz
- * Removes furigana from the HTML content to get clean text
+ * Removes all HTML tags from the content to get clean text
  */
-function removeFurigana(htmlText: string): string {
-  // Simple regex to remove HTML ruby tags
-  return htmlText
+function removeHtmlTags(htmlText: string): string {
+  // First, remove all span tags
+  let cleanText = htmlText
+    .replace(/<span[^>]*>/g, '')
+    .replace(/<\/span>/g, '');
+  
+  // Then remove ruby and rt tags
+  cleanText = cleanText
     .replace(/<ruby>/g, '')
     .replace(/<\/ruby>/g, '')
     .replace(/<rt>.*?<\/rt>/g, '');
+  
+  // Remove any other HTML tags that might be present
+  cleanText = cleanText.replace(/<[^>]*>/g, '');
+  
+  return cleanText;
 }
 
 /**
@@ -128,7 +138,7 @@ async function generateQuizQuestion(
 ): Promise<QuizQuestion | null> {
   try {
     // Clean the text to remove HTML tags
-    const cleanText = removeFurigana(translation.japaneseText);
+    const cleanText = removeHtmlTags(translation.japaneseText);
     
     // Find potential words to quiz
     const quizWords = findQuizWords(cleanText);
@@ -189,7 +199,7 @@ export async function generateQuiz(
   // Gather all saved words from all translations to use as potential distractors
   const allWords: string[] = [];
   for (const translation of translations) {
-    const cleanText = removeFurigana(translation.japaneseText);
+    const cleanText = removeHtmlTags(translation.japaneseText);
     const words = findQuizWords(cleanText);
     allWords.push(...words);
   }
