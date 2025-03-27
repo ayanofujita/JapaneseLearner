@@ -17,6 +17,43 @@
   }
 }
 
+/* Critical overrides to fix tab height issues */
+.tabs-list,
+[data-orientation="horizontal"],
+div[role="tablist"],
+[role="tablist"],
+div[class*="inline-flex h-10"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+button[role="tab"],
+[role="tab"],
+.tabs-trigger,
+button[data-orientation="horizontal"],
+div[role="tablist"] button,
+button[class*="data-state"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  min-width: auto !important;
+  padding: 0.5rem !important;
+}
+
+/* Force override any media queries */
+@media (max-width: 768px) {
+  .tabs-list,
+  [data-orientation="horizontal"],
+  div[role="tablist"],
+  [role="tablist"],
+  div[class*="inline-flex h-10"] {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+  }
+}
+
 /* Custom tabs styling override */
 .tabs-list {
   @apply w-full grid grid-cols-2 bg-muted text-muted-foreground overflow-hidden;
