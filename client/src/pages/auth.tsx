@@ -62,9 +62,9 @@ export default function Auth() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">
-              <TabsList className="w-full grid grid-cols-2 rounded-md bg-muted p-1 text-muted-foreground">
-                <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:text-foreground py-2">Login</TabsTrigger>
-                <TabsTrigger value="register" className="data-[state=active]:bg-background data-[state=active]:text-foreground py-2">Register</TabsTrigger>
+              <TabsList className="tabs-list">
+                <TabsTrigger value="login" className="tabs-trigger py-2">Login</TabsTrigger>
+                <TabsTrigger value="register" className="tabs-trigger py-2">Register</TabsTrigger>
               </TabsList>
               <TabsContent value="login" className="space-y-4 pt-4">
                 <div className="space-y-2">

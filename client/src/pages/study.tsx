@@ -75,12 +75,12 @@ export default function Study() {
       </div>
       
       <Tabs defaultValue="flashcards" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 rounded-md bg-muted p-1 text-muted-foreground">
-          <TabsTrigger value="flashcards" className="flex items-center justify-center data-[state=active]:bg-background data-[state=active]:text-foreground">
+        <TabsList className="tabs-list">
+          <TabsTrigger value="flashcards" className="tabs-trigger">
             <BookOpenCheck className="mr-2 h-4 w-4 flex-shrink-0" />
             <span className="truncate">Flashcards</span>
           </TabsTrigger>
-          <TabsTrigger value="quiz" className="flex items-center justify-center data-[state=active]:bg-background data-[state=active]:text-foreground">
+          <TabsTrigger value="quiz" className="tabs-trigger">
             <FlaskConical className="mr-2 h-4 w-4 flex-shrink-0" />
             <span className="truncate">Quiz</span>
           </TabsTrigger>
