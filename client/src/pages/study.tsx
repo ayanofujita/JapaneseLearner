@@ -16,12 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Study() {
   const { toast } = useToast();
   const [wordToDelete, setWordToDelete] = useState<SavedWord | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [recentlyReviewed, setRecentlyReviewed] = useState<number[]>([]);
 
   const { data: words = [], refetch } = useQuery<SavedWord[]>({
     queryKey: ["/api/words"],
@@ -63,6 +64,17 @@ export default function Study() {
     (word) => !dueWords.some((dueWord) => dueWord.id === word.id),
   );
 
+  // Clear the recently reviewed highlights after 5 seconds
+  useEffect(() => {
+    if (recentlyReviewed.length > 0) {
+      const timer = setTimeout(() => {
+        setRecentlyReviewed([]);
+      }, 5000); // 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [recentlyReviewed]);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="space-y-2">
@@ -79,9 +91,22 @@ export default function Study() {
               key={dueWords[currentCardIndex].id}
               word={dueWords[currentCardIndex]}
               onComplete={() => {
+                // Mark the current word as recently reviewed
+                const currentWordId = dueWords[currentCardIndex].id;
+                setRecentlyReviewed(prev => [...prev, currentWordId]);
+                
+                // Refetch to update the lists with the new review date
                 refetch();
+                
+                // Move to the next card if available
                 if (currentCardIndex < dueWords.length - 1) {
                   setCurrentCardIndex(currentCardIndex + 1);
+                } else {
+                  // If this was the last card, show a completion message
+                  toast({
+                    title: "Review Complete!",
+                    description: "All due words have been reviewed."
+                  });
                 }
               }}
             />
@@ -99,32 +124,47 @@ export default function Study() {
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">All Saved Words</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {nonDueWords.map((word) => (
-            <Card key={word.id} className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold mb-1">{word.word}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {word.reading} · {word.meaning}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Next review:{" "}
-                    {word.nextReview
-                      ? new Date(word.nextReview).toLocaleDateString()
-                      : "Not scheduled"}
-                  </p>
+          {nonDueWords.map((word) => {
+            const isRecentlyReviewed = recentlyReviewed.includes(word.id);
+            return (
+              <Card 
+                key={word.id} 
+                className={`p-4 transition-all duration-500 ${
+                  isRecentlyReviewed ? 'border-primary border-2 shadow-md' : ''
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center">
+                      <h3 className="font-bold mb-1">{word.word}</h3>
+                      {isRecentlyReviewed && (
+                        <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                          Just reviewed
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {word.reading} · {word.meaning}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Next review:{" "}
+                      {word.nextReview
+                        ? new Date(word.nextReview).toLocaleDateString()
+                        : "Not scheduled"}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => setWordToDelete(word)}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => setWordToDelete(word)}
-                >
-                  <Trash2Icon className="h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
 
