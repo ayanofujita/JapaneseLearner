@@ -111,12 +111,14 @@ export default function DictionaryPopup({
     enabled: selectedKanji.length > 0 && isKanjiOpen,
   });
 
+  const [isSaving, setIsSaving] = useState(false);
   const { mutate: saveWord } = useMutation({
     mutationFn: async (data: {
       word: string;
       reading: string;
       meaning: string;
     }) => {
+      setIsSaving(true);
       const res = await apiRequest("POST", "/api/words", data);
       if (!res.ok) {
         const error = await res.json();
@@ -125,9 +127,13 @@ export default function DictionaryPopup({
       return res.json();
     },
     onSuccess: (data) => {
-      // Invalidate the word check query to refresh the saved status
+      // Immediately update the UI
+      queryClient.setQueryData(["/api/words/check", word], { isSaved: true });
+      
+      // Also invalidate the query to ensure consistency with server
       queryClient.invalidateQueries({ queryKey: ["/api/words/check", word] });
-
+      
+      // Show appropriate toast notification
       if (data.message === "Word already saved") {
         toast({
           title: "Word already saved",
@@ -139,6 +145,8 @@ export default function DictionaryPopup({
           description: "Word has been added to your study list",
         });
       }
+      
+      setIsSaving(false);
     },
     onError: (error: Error) => {
       toast({
@@ -146,6 +154,7 @@ export default function DictionaryPopup({
         description: error.message || "Failed to save word",
         variant: "destructive",
       });
+      setIsSaving(false);
     },
   });
 
@@ -343,10 +352,10 @@ export default function DictionaryPopup({
                   });
                 }
               }}
-              disabled={savedStatus?.isSaved}
+              disabled={savedStatus?.isSaved || isSaving}
             >
               <BookmarkIcon className="h-4 w-4 mr-2" />
-              {savedStatus?.isSaved ? "Already Saved" : "Save for Study"}
+              {isSaving ? "Saving..." : savedStatus?.isSaved ? "Already Saved" : "Save for Study"}
             </Button>
           </>
         ) : (
