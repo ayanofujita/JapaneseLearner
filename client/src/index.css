@@ -129,3 +129,12 @@
   max-width: calc(100% - 6px) !important;
   overflow: hidden !important;
 }
+
+/* Override global accessibility media query that's causing the tab height issues */
+@media (max-width: 768px) {
+  [role="tab"],
+  .tabs-trigger {
+    min-height: auto !important;
+    min-width: auto !important;
+  }
+}
