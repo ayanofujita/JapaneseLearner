@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You are offline - Japanese Learning App</title>
+  <style>
+    :root {
+      --primary: #4338ca;
+      --foreground: #333;
+      --background: #f9f9f9;
+      --accent: #e5e7eb;
+      --muted: #6b7280;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #818cf8;
+        --foreground: #e5e7eb;
+        --background: #1f2937;
+        --accent: #374151;
+        --muted: #9ca3af;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--foreground);
+      background-color: var(--background);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background-color: var(--background);
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .japanese {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--foreground);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+      color: var(--muted);
+    }
+
+    .button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+
+    .button:hover {
+      opacity: 0.9;
+    }
+
+    .icon {
+      margin-bottom: 1.5rem;
+      width: 64px;
+      height: 64px;
+      color: var(--primary);
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tips {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--accent);
+      text-align: left;
+    }
+
+    .tips h2 {
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .tips ul {
+      list-style-position: inside;
+      margin-bottom: 1rem;
+    }
+
+    .tips li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">漢字文脈</div>
+    <div class="japanese">インターネット接続がありません</div>
+    
+    <div class="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+    
+    <h1>You're offline</h1>
+    <p>The current page isn't available offline. Please try again when you have an internet connection.</p>
+    
+    <a href="/" class="button">Try again</a>
+
+    <div class="tips">
+      <h2>Offline usage tips:</h2>
+      <ul>
+        <li>Your saved words in the Study section will still be available offline.</li>
+        <li>Previously viewed translations might be accessible from your history.</li>
+        <li>Turn on your internet connection to access all features.</li>
+      </ul>
+      <p>This app works best when you're online, but some features are available offline.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "Japanese Learning App",
+  "short_name": "JP Learn",
+  "description": "A comprehensive Japanese learning web application with flashcards and translation tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4338ca",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait-primary",
+  "categories": ["education", "learning", "language"],
+  "lang": "en-US",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Translate",
+      "url": "/",
+      "description": "Start translating Japanese text"
+    },
+    {
+      "name": "Study",
+      "url": "/study",
+      "description": "Practice your saved words"
+    }
+  ]
+}

@@ -1,9 +1,11 @@
-import { Link, useLocation, useNavigate } from "wouter";
+import { Link, useLocation } from "wouter";
 import { MoonIcon, SunIcon, LogInIcon, LogOutIcon, MenuIcon, XIcon as CloseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import OfflineIndicator from "@/components/offline-indicator";
 import "@/components/mobile-layout.css";
 import { useState, useRef, useEffect } from "react";
 
@@ -50,6 +52,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <OfflineIndicator />
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

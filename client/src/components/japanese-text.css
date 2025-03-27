@@ -1,60 +1,66 @@
-/* Styling for Japanese text component */
-.rt-hidden rt {
-  display: none;
+/* Base styles for Japanese text */
+.japanese-text {
+  line-height: 2.2;
+  letter-spacing: 0.05em;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Noto Sans JP", "Source Han Sans JP", "Meiryo", sans-serif;
 }
 
-/* Improved spacing for furigana */
-rt {
-  margin-bottom: 0.5em;
-  font-size: 0.65em;
-  line-height: 1.5;
-  color: var(--muted-foreground);
-}
-
-ruby {
+/* Ruby (furigana) text styling */
+.japanese-text ruby {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: 1.5;
-  margin: 0 0.1em;
+  line-height: normal;
 }
 
-/* Word highlight styles */
-.jp-word {
-  cursor: pointer;
-  padding: 0 0.1em;
-  border-radius: 0.2em;
-  transition: all 0.2s ease;
-  position: relative;
+/* Improve furigana positioning */
+.japanese-text rt {
+  font-size: 0.5em;
+  opacity: 0.8;
+  line-height: 1;
+  text-align: center;
+  margin-bottom: -0.2em;
+  color: var(--primary);
+  font-weight: 400;
+  font-family: inherit;
 }
 
-.jp-word:hover {
-  background-color: var(--primary/10);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Improved text container spacing */
-.japanese-text-container {
-  font-size: 1.2em;
-  line-height: 2;
-  letter-spacing: 0.01em;
-  padding: 0.5em 0;
-}
-
-/* Media query for mobile devices */
+/* Responsive text size adjustments */
 @media (max-width: 640px) {
-  .japanese-text-container {
-    font-size: 1em;
-    line-height: 1.8;
+  .japanese-text {
+    font-size: 1rem;
+    line-height: 2.5;
   }
   
-  ruby {
-    margin: 0;
-  }
-  
-  rt {
+  .japanese-text rt {
     font-size: 0.6em;
+  }
+}
+
+/* Interactive word highlighting */
+.japanese-text span.word {
+  cursor: pointer;
+  display: inline-block;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.2s ease;
+}
+
+.japanese-text span.word:hover {
+  border-bottom-color: var(--primary);
+  background-color: rgba(67, 56, 202, 0.05);
+}
+
+/* Kanji visual emphasis */
+.japanese-text .kanji {
+  font-weight: 500;
+}
+
+/* High contrast mode for better readability */
+@media (prefers-contrast: high) {
+  .japanese-text rt {
+    color: var(--foreground);
+    opacity: 1;
+    font-weight: bold;
   }
 }

@@ -3,9 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Japanese Learning App</title>
+    <meta name="description" content="A comprehensive Japanese learning web application with flashcards and translation tools" />
+    <meta name="theme-color" content="#4338ca" />
+    
+    <!-- PWA meta tags -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icons/icon-192x192.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+    
+    <!-- iOS meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="JP Learn" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA offline fallback -->
+    <noscript>
+      <div style="padding: 2rem; text-align: center;">
+        <h1>Japanese Learning App</h1>
+        <p>This application requires JavaScript to run.</p>
+      </div>
+    </noscript>
   </body>
 </html>

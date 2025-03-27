@@ -15,4 +15,72 @@
     margin-top: 0.5rem !important;
     margin-bottom: 0.75rem !important;
   }
+  
+  /* Improve touch targets for mobile */
+  button, 
+  .button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Adjust spacing for mobile */
+  .container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Improve form controls for touch */
+  input, 
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    padding: 0.75rem !important;
+  }
+  
+  /* Optimize for smaller screens and offline viewing */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Better spacing for stacked elements */
+  .stack > * + * {
+    margin-top: 1rem;
+  }
+}
+
+/* PWA display improvements */
+@media (display-mode: standalone) {
+  /* Add padding for iOS home screen app to account for safe areas */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  
+  /* Hide elements that don't make sense in app context */
+  .browser-only {
+    display: none !important;
+  }
+  
+  /* Show PWA-specific elements */
+  .pwa-only {
+    display: block !important;
+  }
+}
+
+/* Only show in mobile app context by default */
+.pwa-only {
+  display: none;
+}
+
+/* Offline indicator spacing adjustment when both are present */
+.offline-indicator ~ header {
+  margin-top: 40px !important;
+}
+
+/* Add smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
 }
