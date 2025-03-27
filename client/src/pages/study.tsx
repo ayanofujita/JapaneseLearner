@@ -3,11 +3,11 @@ import StudyCard from "@/components/study-card";
 import Quiz from "@/components/quiz";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon, BookOpenCheck, FlaskConical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { SavedWord } from "@shared/schema";
-import StudyTabs, { StudyTabContent } from "@/components/study-tabs";
+import { BasicTabs, Tab } from "@/components/basic-tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,6 @@ export default function Study() {
   const { toast } = useToast();
   const [wordToDelete, setWordToDelete] = useState<SavedWord | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState('flashcards');
 
   const { data: words = [], refetch } = useQuery<SavedWord[]>({
     queryKey: ["/api/words"],
@@ -75,13 +74,16 @@ export default function Study() {
         </p>
       </div>
       
-      <div className="w-full">
-        <StudyTabs 
-          selectedTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
-        
-        <StudyTabContent tab="flashcards" selectedTab={activeTab}>
+      <BasicTabs defaultTab="flashcards">
+        <Tab 
+          id="flashcards" 
+          label={
+            <div className="flex items-center">
+              <BookOpenCheck className="mr-2 h-4 w-4" />
+              <span>Flashcards</span>
+            </div>
+          }
+        >
           <div className="space-y-6">
             {dueWords.length > 0 ? (
               <div className="space-y-4">
@@ -139,12 +141,20 @@ export default function Study() {
               </div>
             </div>
           </div>
-        </StudyTabContent>
+        </Tab>
         
-        <StudyTabContent tab="quiz" selectedTab={activeTab}>
+        <Tab 
+          id="quiz" 
+          label={
+            <div className="flex items-center">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              <span>Quiz</span>
+            </div>
+          }
+        >
           <Quiz />
-        </StudyTabContent>
-      </div>
+        </Tab>
+      </BasicTabs>
 
       <AlertDialog
         open={!!wordToDelete}
