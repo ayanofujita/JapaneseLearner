@@ -130,11 +130,77 @@
   overflow: hidden !important;
 }
 
-/* Override global accessibility media query that's causing the tab height issues */
+/* Critical overrides to fix tab height issues */
+.tabs-list,
+[data-orientation="horizontal"],
+div[role="tablist"],
+[role="tablist"],
+div[class*="inline-flex h-10"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+button[role="tab"],
+[role="tab"],
+.tabs-trigger,
+button[data-orientation="horizontal"],
+div[role="tablist"] button,
+button[class*="data-state"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  min-width: auto !important;
+}
+
+/* Force override any media queries */
 @media (max-width: 768px) {
-  [role="tab"],
-  .tabs-trigger {
+  .tabs-list,
+  [data-orientation="horizontal"],
+  div[role="tablist"],
+  [role="tablist"],
+  div[class*="inline-flex h-10"] {
+    height: auto !important;
     min-height: auto !important;
+    max-height: none !important;
+  }
+
+  button[role="tab"],
+  [role="tab"],
+  .tabs-trigger,
+  button[data-orientation="horizontal"],
+  div[role="tablist"] button,
+  button[class*="data-state"] {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
     min-width: auto !important;
+  }
+  
+  /* Specifically target any h-10 classes */
+  .h-10 {
+    height: auto !important;
+  }
+  
+  /* Target any min-height utility classes */
+  [class*="min-h-"] {
+    min-height: auto !important;
+  }
+  
+  /* Direct overrides for our tabs */
+  .low-height-tabs [role="tablist"] {
+    height: auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+  }
+  
+  .low-height-tabs [role="tab"] {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    flex-shrink: 0 !important;
   }
 }
