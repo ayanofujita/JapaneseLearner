@@ -8,9 +8,7 @@ import Home from "@/pages/home";
 import Study from "@/pages/study";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
-import History from "@/pages/history";
-import Quiz from "@/pages/quiz";
-import PWAUpdateNotification from "@/components/pwa-update";
+import History from "@/pages/history"; // Added import for History component
 
 
 function Router() {
@@ -20,8 +18,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/study" component={Study} />
         <Route path="/auth" component={Auth} />
-        <Route path="/history" component={History} />
-        <Route path="/quiz" component={Quiz} />
+        <Route path="/history" component={History} /> {/* Added history route */}
         <Route component={NotFound} />
       </Switch>
     </Layout>
@@ -34,7 +31,6 @@ function App() {
       <AuthProvider>
         <Router />
         <Toaster />
-        <PWAUpdateNotification />
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -1,110 +1,60 @@
-/* Base styles for Japanese text */
-.japanese-text {
-  line-height: 2.2;
-  letter-spacing: 0.05em;
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Noto Sans JP", "Source Han Sans JP", "Meiryo", sans-serif;
+/* Styling for Japanese text component */
+.rt-hidden rt {
+  display: none;
 }
 
-/* Ruby (furigana) text styling */
-.japanese-text ruby {
+/* Improved spacing for furigana */
+rt {
+  margin-bottom: 0.5em;
+  font-size: 0.65em;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+ruby {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  line-height: normal;
+  line-height: 1.5;
+  margin: 0 0.1em;
 }
 
-/* Improve furigana positioning */
-.japanese-text rt {
-  font-size: 0.5em;
-  opacity: 0.8;
-  line-height: 1;
-  text-align: center;
-  margin-bottom: -0.2em;
-  color: var(--primary);
-  font-weight: 400;
-  font-family: inherit;
+/* Word highlight styles */
+.jp-word {
+  cursor: pointer;
+  padding: 0 0.1em;
+  border-radius: 0.2em;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-/* Responsive text size adjustments */
+.jp-word:hover {
+  background-color: var(--primary/10);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved text container spacing */
+.japanese-text-container {
+  font-size: 1.2em;
+  line-height: 2;
+  letter-spacing: 0.01em;
+  padding: 0.5em 0;
+}
+
+/* Media query for mobile devices */
 @media (max-width: 640px) {
-  .japanese-text {
-    font-size: 1rem;
-    line-height: 2.5;
+  .japanese-text-container {
+    font-size: 1em;
+    line-height: 1.8;
   }
   
-  .japanese-text rt {
+  ruby {
+    margin: 0;
+  }
+  
+  rt {
     font-size: 0.6em;
   }
-}
-
-/* Interactive word highlighting */
-.japanese-text span.word {
-  cursor: pointer;
-  display: inline-block;
-  border-bottom: 1px dashed transparent;
-  transition: all 0.2s ease;
-}
-
-.japanese-text span.word:hover {
-  border-bottom-color: var(--primary);
-  background-color: rgba(67, 56, 202, 0.05);
-}
-
-/* Kanji visual emphasis */
-.japanese-text .kanji {
-  font-weight: 500;
-}
-
-/* High contrast mode for better readability */
-@media (prefers-contrast: high) {
-  .japanese-text rt {
-    color: var(--foreground);
-    opacity: 1;
-    font-weight: bold;
-  }
-}
-
-/* IMPORTANT: Hide furigana when rt-hidden class is applied */
-.rt-hidden ruby rt,
-.japanese-text-container.rt-hidden ruby rt,
-.japanese-text-container.rt-hidden rt {
-  display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  width: 0 !important;
-  opacity: 0 !important;
-}
-
-.rt-hidden ruby,
-.japanese-text-container.rt-hidden ruby {
-  ruby-align: center;
-}
-
-/* Add this to ensure all the Japanese text components are correctly styled */
-.japanese-text-container {
-  line-height: 2.2;
-  letter-spacing: 0.05em;
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Noto Sans JP", "Source Han Sans JP", "Meiryo", sans-serif;
-}
-
-/* Ruby (furigana) text styling for the container */
-.japanese-text-container ruby {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  line-height: normal;
-}
-
-/* Improve furigana positioning for the container */
-.japanese-text-container rt {
-  font-size: 0.5em;
-  opacity: 0.8;
-  line-height: 1;
-  text-align: center;
-  margin-bottom: -0.2em;
-  color: var(--primary);
-  font-weight: 400;
-  font-family: inherit;
 }

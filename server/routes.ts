@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { translateRequestSchema, insertSavedWordSchema, quizSubmissionSchema } from "@shared/schema";
+import { translateRequestSchema, insertSavedWordSchema } from "@shared/schema";
 import { translateText, addFurigana, generateTitle } from "./openai";
 import { ZodError } from "zod";
 import { setupAuth } from "./auth";
@@ -262,123 +262,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wordText = req.params.word;
       const count = await storage.getWordCount(req.user.id, wordText);
       res.json({ isSaved: count > 0 });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unknown error occurred";
-      res.status(500).json({ message });
-    }
-  });
-
-  // Quiz endpoints
-  app.get("/api/quiz/words", async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-
-      // Get words for quiz from the user's saved words
-      const words = await storage.getSavedWords(req.user.id);
-      
-      // Filter words with review data if needed
-      const canQuiz = words.length >= 5; // Require at least 5 words for a quiz
-      
-      if (!canQuiz) {
-        return res.status(400).json({ message: "Please save at least 5 words to take a quiz" });
-      }
-      
-      // Return the words to use for the quiz
-      // Limit to 10 words for a reasonable quiz length
-      const quizWords = words
-        .sort(() => Math.random() - 0.5) // Randomize
-        .slice(0, 10); // Take 10 random words
-      
-      res.json(quizWords);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unknown error occurred";
-      res.status(500).json({ message });
-    }
-  });
-
-  app.post("/api/quiz/submit", async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
-      // Validate the quiz submission
-      const { quizType, answers } = quizSubmissionSchema.parse(req.body);
-      
-      if (answers.length === 0) {
-        return res.status(400).json({ message: "Quiz must have at least one answer" });
-      }
-      
-      // Calculate the number of correct answers
-      const correctCount = answers.filter(a => a.correct).length;
-      const totalCount = answers.length;
-      
-      // Save the quiz result
-      const quizResult = await storage.createQuizResult({
-        userId: req.user.id,
-        correctCount,
-        totalCount,
-        quizType
-      });
-      
-      // Save each individual word attempt
-      for (const answer of answers) {
-        await storage.saveQuizWordAttempt({
-          quizResultId: quizResult.id,
-          wordId: answer.wordId,
-          correct: answer.correct
-        });
-      }
-      
-      // Return the result
-      res.json({
-        id: quizResult.id,
-        correctCount,
-        totalCount,
-        score: (correctCount / totalCount) * 100,
-        quizType
-      });
-    } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        res.status(400).json({ message: "Invalid quiz data", errors: error.errors });
-      } else {
-        const message = error instanceof Error ? error.message : "Unknown error occurred";
-        res.status(500).json({ message });
-      }
-    }
-  });
-
-  app.get("/api/quiz/results", async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
-      // Get limit parameter from query, default to 10
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      
-      // Get quiz results for the user
-      const results = await storage.getQuizResults(req.user.id, limit);
-      
-      res.json(results);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unknown error occurred";
-      res.status(500).json({ message });
-    }
-  });
-
-  app.get("/api/quiz/stats", async (req, res) => {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
-      // Get quiz statistics for the user
-      const stats = await storage.getQuizStats(req.user.id);
-      
-      res.json(stats);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Unknown error occurred";
       res.status(500).json({ message });
