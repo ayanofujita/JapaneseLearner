@@ -64,3 +64,8 @@
     font-weight: bold;
   }
 }
+
+/* Hide furigana when rt-hidden class is applied */
+.rt-hidden rt {
+  display: none !important;
+}
