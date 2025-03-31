@@ -9,6 +9,7 @@ import Study from "@/pages/study";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import History from "@/pages/history";
+import Quiz from "@/pages/quiz";
 import PWAUpdateNotification from "@/components/pwa-update";
 
 
@@ -20,6 +21,7 @@ function Router() {
         <Route path="/study" component={Study} />
         <Route path="/auth" component={Auth} />
         <Route path="/history" component={History} />
+        <Route path="/quiz" component={Quiz} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

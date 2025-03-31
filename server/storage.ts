@@ -2,15 +2,21 @@ import {
   translations,
   savedWords,
   users,
+  quizResults,
+  quizWordAttempts,
   type Translation,
   type InsertTranslation,
   type SavedWord,
   type InsertSavedWord,
   type User,
   type InsertUser,
+  type QuizResult,
+  type InsertQuizResult,
+  type QuizWordAttempt,
+  type InsertQuizWordAttempt,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { sql } from 'drizzle-orm/sql';
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -37,6 +43,20 @@ export interface IStorage {
   updateWordReview(id: number, nextReview: Date): Promise<SavedWord>;
   getWordCount(userId: number, wordText: string): Promise<number>;
   deleteWord(id: number): Promise<void>;
+  
+  // Quiz methods
+  createQuizResult(result: InsertQuizResult & { userId: number }): Promise<QuizResult>;
+  getQuizResults(userId: number, limit?: number): Promise<QuizResult[]>;
+  saveQuizWordAttempt(
+    attempt: InsertQuizWordAttempt & { quizResultId: number }
+  ): Promise<QuizWordAttempt>;
+  getQuizWordAttempts(quizResultId: number): Promise<QuizWordAttempt[]>;
+  getQuizStats(userId: number): Promise<{ 
+    totalQuizzes: number; 
+    totalCorrect: number; 
+    totalQuestions: number;
+    byType: Record<string, { correct: number; total: number }>;
+  }>;
 
   // Session store
   sessionStore: session.Store;
@@ -106,8 +126,10 @@ export class DatabaseStorage implements IStorage {
     const existingWords = await db
       .select()
       .from(savedWords)
-      .where(eq(savedWords.userId, word.userId))
-      .where(eq(savedWords.word, word.word));
+      .where(and(
+        eq(savedWords.userId, word.userId),
+        eq(savedWords.word, word.word)
+      ));
 
     // If the word already exists, return it instead of creating a duplicate
     if (existingWords.length > 0) {
@@ -123,7 +145,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSavedWords(userId: number): Promise<SavedWord[]> {
-    return db.select().from(savedWords).where(eq(savedWords.userId, userId));
+    return await db
+      .select()
+      .from(savedWords)
+      .where(eq(savedWords.userId, userId));
   }
 
   async getWordCount(userId: number, wordText: string): Promise<number> {
@@ -159,6 +184,81 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWord(id: number): Promise<void> {
     await db.delete(savedWords).where(eq(savedWords.id, id));
+  }
+
+  // Quiz methods
+  async createQuizResult(result: InsertQuizResult & { userId: number }): Promise<QuizResult> {
+    const [newQuizResult] = await db
+      .insert(quizResults)
+      .values(result)
+      .returning();
+    return newQuizResult;
+  }
+
+  async getQuizResults(userId: number, limit?: number): Promise<QuizResult[]> {
+    const query = db
+      .select()
+      .from(quizResults)
+      .where(eq(quizResults.userId, userId))
+      .orderBy(desc(quizResults.completedAt));
+    
+    // Apply limit if specified
+    const results = limit ? await query.limit(limit) : await query;
+    return results;
+  }
+
+  async saveQuizWordAttempt(
+    attempt: InsertQuizWordAttempt & { quizResultId: number }
+  ): Promise<QuizWordAttempt> {
+    const [newAttempt] = await db
+      .insert(quizWordAttempts)
+      .values(attempt)
+      .returning();
+    return newAttempt;
+  }
+
+  async getQuizWordAttempts(quizResultId: number): Promise<QuizWordAttempt[]> {
+    return await db
+      .select()
+      .from(quizWordAttempts)
+      .where(eq(quizWordAttempts.quizResultId, quizResultId));
+  }
+
+  async getQuizStats(userId: number): Promise<{ 
+    totalQuizzes: number; 
+    totalCorrect: number; 
+    totalQuestions: number;
+    byType: Record<string, { correct: number; total: number }>;
+  }> {
+    // Get all quiz results for this user
+    const results = await db
+      .select()
+      .from(quizResults)
+      .where(eq(quizResults.userId, userId));
+    
+    // Calculate aggregate stats
+    const totalQuizzes = results.length;
+    const totalCorrect = results.reduce((sum, result) => sum + result.correctCount, 0);
+    const totalQuestions = results.reduce((sum, result) => sum + result.totalCount, 0);
+    
+    // Calculate stats by quiz type
+    const byType: Record<string, { correct: number; total: number }> = {};
+    
+    for (const result of results) {
+      if (!byType[result.quizType]) {
+        byType[result.quizType] = { correct: 0, total: 0 };
+      }
+      
+      byType[result.quizType].correct += result.correctCount;
+      byType[result.quizType].total += result.totalCount;
+    }
+    
+    return {
+      totalQuizzes,
+      totalCorrect,
+      totalQuestions,
+      byType
+    };
   }
 }
 

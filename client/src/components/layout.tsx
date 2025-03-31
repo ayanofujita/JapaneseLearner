@@ -76,6 +76,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       Study
                     </span>
                   </Link>
+                  <Link href="/quiz">
+                    <span className={location === "/quiz" ? "text-primary cursor-pointer" : "text-muted-foreground cursor-pointer"}>
+                      Quiz
+                    </span>
+                  </Link>
                 </nav>
               )}
             </div>
@@ -147,6 +152,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <Link href="/study">
                   <span className={`block px-4 py-2 text-sm ${location === "/study" ? "text-primary" : "text-foreground"} hover:bg-accent`}>
                     Study
+                  </span>
+                </Link>
+                <Link href="/quiz">
+                  <span className={`block px-4 py-2 text-sm ${location === "/quiz" ? "text-primary" : "text-foreground"} hover:bg-accent`}>
+                    Quiz
                   </span>
                 </Link>
                 {user && (
