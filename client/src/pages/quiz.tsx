@@ -18,11 +18,13 @@ type QuizResultDetails = {
   totalCount: number;
   score: number;
   quizType: string;
-  completedAt: string;
+  completedAt: Date | string;
 };
 
 const QuizResultCard = ({ result }: { result: QuizResult }) => {
-  const formattedDate = new Date(result.completedAt as string).toLocaleDateString(undefined, {
+  // Ensure we have a valid date value before creating a Date object
+  const completedAt = result.completedAt ? result.completedAt : new Date().toISOString();
+  const formattedDate = new Date(completedAt).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",

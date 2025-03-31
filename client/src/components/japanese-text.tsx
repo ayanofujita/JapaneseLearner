@@ -73,7 +73,15 @@ export default function JapaneseText({
 
   const toggleFurigana = () => {
     console.log("Toggling furigana from", showFurigana, "to", !showFurigana);
+    // Also log the html element and its classes
+    const container = document.querySelector(".japanese-text-container");
+    console.log("Current container classes:", container?.className);
     setShowFurigana(!showFurigana);
+    // Log after the next render
+    setTimeout(() => {
+      const containerAfter = document.querySelector(".japanese-text-container");
+      console.log("Updated container classes:", containerAfter?.className);
+    }, 100);
   };
 
   const toggleEnglishText = () => {

@@ -65,9 +65,20 @@
   }
 }
 
-/* Hide furigana when rt-hidden class is applied */
+/* IMPORTANT: Hide furigana when rt-hidden class is applied */
+.rt-hidden ruby rt,
+.japanese-text-container.rt-hidden ruby rt,
 .japanese-text-container.rt-hidden rt {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}
+
+.rt-hidden ruby,
+.japanese-text-container.rt-hidden ruby {
+  ruby-align: center;
 }
 
 /* Add this to ensure all the Japanese text components are correctly styled */
@@ -75,4 +86,25 @@
   line-height: 2.2;
   letter-spacing: 0.05em;
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Noto Sans JP", "Source Han Sans JP", "Meiryo", sans-serif;
+}
+
+/* Ruby (furigana) text styling for the container */
+.japanese-text-container ruby {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: normal;
+}
+
+/* Improve furigana positioning for the container */
+.japanese-text-container rt {
+  font-size: 0.5em;
+  opacity: 0.8;
+  line-height: 1;
+  text-align: center;
+  margin-bottom: -0.2em;
+  color: var(--primary);
+  font-weight: 400;
+  font-family: inherit;
 }
