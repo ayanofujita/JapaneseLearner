@@ -72,6 +72,7 @@ export default function JapaneseText({
   };
 
   const toggleFurigana = () => {
+    console.log("Toggling furigana from", showFurigana, "to", !showFurigana);
     setShowFurigana(!showFurigana);
   };
 

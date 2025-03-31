@@ -66,6 +66,13 @@
 }
 
 /* Hide furigana when rt-hidden class is applied */
-.rt-hidden rt {
+.japanese-text-container.rt-hidden rt {
   display: none !important;
+}
+
+/* Add this to ensure all the Japanese text components are correctly styled */
+.japanese-text-container {
+  line-height: 2.2;
+  letter-spacing: 0.05em;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Noto Sans JP", "Source Han Sans JP", "Meiryo", sans-serif;
 }
